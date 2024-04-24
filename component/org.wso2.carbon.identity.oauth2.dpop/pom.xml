@@ -70,6 +70,28 @@
             <groupId>org.wso2.carbon.identity.auth.rest</groupId>
             <artifactId>org.wso2.carbon.identity.auth.service</artifactId>
         </dependency>
+        <!--Test Dependencies-->
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jacoco</groupId>
+            <artifactId>org.jacoco.agent</artifactId>
+            <classifier>runtime</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-module-testng</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-api-mockito2</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -139,6 +161,46 @@
                             org.wso2.carbon.identity.oauth2.dpop.*; version="${project.version}"
                         </Export-Package>
                     </instructions>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven.surefire.plugin.version}</version>
+                <configuration>
+                    <argLine>
+                        --add-opens java.base/java.util=ALL-UNNAMED
+                        --add-opens java.base/java.lang=ALL-UNNAMED
+                        --add-opens java.base/java.io=ALL-UNNAMED
+                        --add-opens java.base/java.nio.charset=ALL-UNNAMED
+                        --add-opens java.base/java.net=ALL-UNNAMED
+                        --add-opens java.base/java.util.stream=ALL-UNNAMED
+                        --add-opens java.base/java.util.regex=ALL-UNNAMED
+                        --add-opens java.base/jdk.internal.util=ALL-UNNAMED
+                        --add-opens java.base/jdk.internal.loader=ALL-UNNAMED
+                        --add-opens java.xml/jdk.xml.internal=ALL-UNNAMED
+                        --add-opens java.base/sun.nio.fs=ALL-UNNAMED
+                        --add-opens java.base/sun.nio.cs=ALL-UNNAMED
+                        --add-opens java.base/sun.net.www.protocol.https=ALL-UNNAMED
+                        --add-opens java.base/java.nio.file=ALL-UNNAMED
+                        --add-opens java.base/java.security=ALL-UNNAMED
+                        --add-opens java.base/sun.security.util=ALL-UNNAMED
+                        --add-opens java.base/sun.security.jca=ALL-UNNAMED
+                        --add-opens java.base/java.lang.reflect=ALL-UNNAMED
+                        --add-opens java.base/java.util.concurrent=ALL-UNNAMED
+                        --add-opens java.base/sun.reflect.misc=ALL-UNNAMED
+                    </argLine>
+                    <suiteXmlFiles>
+                        <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
+                    </suiteXmlFiles>
+                    <systemPropertyVariables>
+                        <jacoco-agent.destfile>target/jacoco.exec</jacoco-agent.destfile>
+                    </systemPropertyVariables>
+                    <reuseForks>true</reuseForks>
+                    <classpathDependencyExcludes>
+                        <classpathDependencyExclude>org.ops4j.pax.logging</classpathDependencyExclude>
+                        <classpathDependencyExclude>org.wso2.org.ops4j.pax.logging</classpathDependencyExclude>
+                    </classpathDependencyExcludes>
                 </configuration>
             </plugin>
         </plugins>
