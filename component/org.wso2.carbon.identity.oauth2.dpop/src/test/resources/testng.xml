@@ -24,6 +24,7 @@
         <parameter name="log-level" value="debug, info"/>
         <classes>
             <class name="org.wso2.carbon.identity.oauth2.dpop.util.UtilsTest"/>
+            <class name="org.wso2.carbon.identity.oauth2.dpop.validators.DPoPHeaderValidatorTest"/>
         </classes>
     </test>
 </suite>

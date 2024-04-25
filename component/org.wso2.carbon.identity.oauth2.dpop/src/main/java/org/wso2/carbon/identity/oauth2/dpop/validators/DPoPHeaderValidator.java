@@ -384,7 +384,7 @@ public class DPoPHeaderValidator {
         String hashFromToken = Base64.getUrlEncoder().withoutPadding().encodeToString(hashBytes);
         if (!StringUtils.equals(ath.toString(), hashFromToken)) {
             LOG.error("DPoP Proof access token hash mismatch.");
-            throw new IdentityOAuth2ClientException(DPoPConstants.INVALID_DPOP_PROOF, DPoPConstants.INVALID_DPOP_PROOF);
+            throw new IdentityOAuth2ClientException(DPoPConstants.INVALID_DPOP_PROOF, DPoPConstants.INVALID_DPOP_ERROR);
         }
         return true;
     }
