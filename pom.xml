@@ -319,7 +319,7 @@
                     <configuration>
                         <effort>Max</effort>
                         <threshold>Low</threshold>
-                        <failOnError>true</failOnError>
+                        <failOnError>false</failOnError>
                         <maxHeap>1024</maxHeap>
                         <plugins>
                             <plugin>

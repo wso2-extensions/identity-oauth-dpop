@@ -20,11 +20,11 @@ package org.wso2.carbon.identity.oauth2.dpop.dao;
 
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
-import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
-import org.wso2.carbon.identity.oauth2.dpop.util.Utils;
 import org.wso2.carbon.identity.oauth.tokenprocessor.HashingPersistenceProcessor;
 import org.wso2.carbon.identity.oauth.tokenprocessor.TokenPersistenceProcessor;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
+import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
+import org.wso2.carbon.identity.oauth2.dpop.util.Utils;
 import org.wso2.carbon.identity.oauth2.token.bindings.TokenBinding;
 
 import java.util.List;
@@ -42,7 +42,8 @@ public class DPoPTokenManagerDAOImpl implements DPoPTokenManagerDAO {
     }
 
     @Override
-    public TokenBinding getTokenBinding(String refreshToken, boolean isTokenHashingEnabled) throws IdentityOAuth2Exception {
+    public TokenBinding getTokenBinding(String refreshToken, boolean isTokenHashingEnabled)
+            throws IdentityOAuth2Exception {
 
         if (isTokenHashingEnabled) {
             return getBindingFromRefreshToken(refreshToken, true);
@@ -50,7 +51,8 @@ public class DPoPTokenManagerDAOImpl implements DPoPTokenManagerDAO {
         return getBindingFromRefreshToken(refreshToken, false);
     }
 
-    private TokenBinding getBindingFromRefreshToken(String refreshToken,boolean isTokenHashingEnabled) throws IdentityOAuth2Exception {
+    private TokenBinding getBindingFromRefreshToken(String refreshToken, boolean isTokenHashingEnabled)
+            throws IdentityOAuth2Exception {
 
         JdbcTemplate jdbcTemplate = Utils.getNewTemplate();
         if (isTokenHashingEnabled) {

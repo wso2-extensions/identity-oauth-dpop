@@ -30,8 +30,8 @@ import org.wso2.carbon.identity.auth.service.exception.AuthenticationFailExcepti
 import org.wso2.carbon.identity.auth.service.handler.AuthenticationHandler;
 import org.wso2.carbon.identity.auth.service.util.AuthConfigurationUtil;
 import org.wso2.carbon.identity.core.bean.context.MessageContext;
-import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
 import org.wso2.carbon.identity.oauth2.OAuth2TokenValidationService;
+import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2ClientApplicationDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2TokenValidationRequestDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2TokenValidationResponseDTO;
@@ -53,7 +53,6 @@ public class DPoPAuthenticationHandler extends AuthenticationHandler {
         AuthenticationContext authenticationContext = (AuthenticationContext) messageContext;
         AuthenticationRequest authenticationRequest = authenticationContext.getAuthenticationRequest();
         if (authenticationRequest != null) {
-
             String authorizationHeader = authenticationRequest.getHeader(HttpHeaders.AUTHORIZATION);
             if (StringUtils.isNotBlank(authorizationHeader) &&
                     authorizationHeader.startsWith(DPoPConstants.OAUTH_DPOP_HEADER)) {
