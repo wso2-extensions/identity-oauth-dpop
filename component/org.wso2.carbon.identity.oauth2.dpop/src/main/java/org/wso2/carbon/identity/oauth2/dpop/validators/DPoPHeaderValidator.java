@@ -31,11 +31,16 @@ import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
 import org.wso2.carbon.identity.core.handler.AbstractIdentityHandler;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
+import org.wso2.carbon.identity.oauth.cache.OAuthCache;
 import org.wso2.carbon.identity.oauth.common.exception.InvalidOAuthClientException;
 import org.wso2.carbon.identity.oauth.dao.OAuthAppDO;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2ClientException;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
+import org.wso2.carbon.identity.oauth2.dpop.cache.DPoPJKTCache;
+import org.wso2.carbon.identity.oauth2.dpop.cache.DPoPJKTCacheEntry;
+import org.wso2.carbon.identity.oauth2.dpop.cache.DPoPJKTCacheKey;
 import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
+import org.wso2.carbon.identity.oauth2.dpop.dao.DPoPJKTDAOImpl;
 import org.wso2.carbon.identity.oauth2.dpop.listener.OauthDPoPInterceptorHandlerProxy;
 import org.wso2.carbon.identity.oauth2.dpop.util.Utils;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenReqDTO;
@@ -163,6 +168,7 @@ public class DPoPHeaderValidator {
             if (isValidDPoPProof(httpMethod, httpURL, dPoPProof)) {
                 String thumbprint = Utils.getThumbprintOfKeyFromDpopProof(dPoPProof);
                 if (StringUtils.isNotBlank(thumbprint)) {
+                    validateDPoPJKT(tokenReqDTO, thumbprint);
                     TokenBinding tokenBinding = new TokenBinding();
                     tokenBinding.setBindingType(DPoPConstants.DPOP_TOKEN_TYPE);
                     tokenBinding.setBindingValue(thumbprint);
@@ -379,5 +385,44 @@ public class DPoPHeaderValidator {
             throw new IdentityOAuth2ClientException(DPoPConstants.INVALID_DPOP_PROOF, DPoPConstants.INVALID_DPOP_PROOF);
         }
         return true;
+    }
+
+    private void validateDPoPJKT(OAuth2AccessTokenReqDTO tokenReqDTO, String thumbprint)
+            throws IdentityOAuth2Exception {
+
+        if (StringUtils.equals(tokenReqDTO.getGrantType(), DPoPConstants.AUTHORIZATION_CODE_GRANT_TYPE)) {
+            String dpopJKT = getPersistedDPoPJKT(tokenReqDTO.getClientId(), tokenReqDTO.getAuthorizationCode());
+            if (dpopJKT != null) {
+                if (!StringUtils.equals(dpopJKT, thumbprint)) {
+                    throw new IdentityOAuth2ClientException(DPoPConstants.INVALID_DPOP_PROOF,
+                            DPoPConstants.INVALID_DPOP_ERROR + " : dpop_jkt does not match the thumbprint.");
+                }
+            }
+        }
+    }
+
+    private String getPersistedDPoPJKT(String clientId, String authzCode)
+            throws IdentityOAuth2Exception {
+
+        if (OAuthCache.getInstance().isEnabled()) {
+            DPoPJKTCacheKey cacheKey = new DPoPJKTCacheKey(clientId, authzCode);
+            DPoPJKTCacheEntry cacheEntry = DPoPJKTCache.getInstance().getValueFromCache(cacheKey);
+            if (cacheEntry != null) {
+                String dpopJKT = cacheEntry.getDpopJkt();
+                DPoPJKTCache.getInstance().clearCacheEntry(cacheKey);
+                //ensures the function returns null only when there is no entry in cache for the given authzCode
+                return (dpopJKT == null) ? "" : dpopJKT;
+            } else {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("dpop_jkt info was not available in cache for client id : "
+                            + clientId);
+                }
+            }
+        }
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Retrieving authorization code information from db for client id : " + clientId);
+        }
+        DPoPJKTDAOImpl dpopJKTDAO = new DPoPJKTDAOImpl();
+        return dpopJKTDAO.getDPoPJKTFromAuthzCode(authzCode);
     }
 }

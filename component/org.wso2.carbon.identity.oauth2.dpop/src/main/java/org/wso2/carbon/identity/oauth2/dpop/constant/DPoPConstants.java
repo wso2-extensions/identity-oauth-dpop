@@ -31,7 +31,6 @@ public class DPoPConstants {
     public static final String DPOP_ACCESS_TOKEN_HASH = "ath";
     public static final String DPOP_JWT_TYPE = "dpop+jwt";
     public static final String DPOP_TOKEN_TYPE = "DPoP";
-    public static final String EXPIRED_DPOP_PROOF = "Expired DPoP Proof";
     public static final String INVALID_DPOP_PROOF = "invalid_dpop_proof";
     public static final String INVALID_DPOP_ERROR = "Invalid DPoP Proof";
     public static final String INVALID_CLIENT = "invalid_client";
@@ -45,20 +44,12 @@ public class DPoPConstants {
     public static final String CNF = "cnf";
     public static final String TOKEN_TYPE = "token_type";
     public static final String JWK_THUMBPRINT = "jkt";
+    public static final String DPOP_JKT_TABLE_NAME = "IDN_OAUTH2_DPOP_JKT";
+    public static final String DPOP_JKT = "dpop_jkt";
     public static final String AUTHORIZATION_HEADER = "authorization";
+    public static final String CLIENT_ID = "client_id";
+    public static final String AUTHORIZATION_CODE_GRANT_TYPE = "authorization_code";
     public static final String OAUTH_REVOKE_ENDPOINT = "/oauth2/revoke";
     public static final String SKIP_DPOP_VALIDATION_IN_REVOKE = "skip_dpop_validation_in_revoke";
     public static final boolean DEFAULT_SKIP_DPOP_VALIDATION_IN_REVOKE_VALUE = true;
-
-    /**
-     * This class defines SQLQueries.
-     */
-    public static class SQLQueries {
-
-        public static final String RETRIEVE_TOKEN_BINDING_BY_REFRESH_TOKEN =
-                "SELECT BINDING.TOKEN_BINDING_TYPE,BINDING.TOKEN_BINDING_VALUE,BINDING.TOKEN_BINDING_REF " +
-                        "FROM IDN_OAUTH2_ACCESS_TOKEN TOKEN LEFT JOIN IDN_OAUTH2_TOKEN_BINDING BINDING ON " +
-                        "TOKEN.TOKEN_ID=BINDING.TOKEN_ID WHERE TOKEN.REFRESH_TOKEN = ? " +
-                        "AND BINDING.TOKEN_BINDING_TYPE = ?";
-    }
 }
