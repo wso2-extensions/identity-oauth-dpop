@@ -31,13 +31,13 @@ import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
 import org.wso2.carbon.identity.core.handler.AbstractIdentityHandler;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
-import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
-import org.wso2.carbon.identity.oauth2.dpop.listener.OauthDPoPInterceptorHandlerProxy;
-import org.wso2.carbon.identity.oauth2.dpop.util.Utils;
 import org.wso2.carbon.identity.oauth.common.exception.InvalidOAuthClientException;
 import org.wso2.carbon.identity.oauth.dao.OAuthAppDO;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2ClientException;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
+import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
+import org.wso2.carbon.identity.oauth2.dpop.listener.OauthDPoPInterceptorHandlerProxy;
+import org.wso2.carbon.identity.oauth2.dpop.util.Utils;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenReqDTO;
 import org.wso2.carbon.identity.oauth2.model.HttpRequestHeader;
 import org.wso2.carbon.identity.oauth2.token.OAuthTokenReqMessageContext;
@@ -59,7 +59,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class DPoPHeaderValidator {
 
-    static final Log log = LogFactory.getLog(DPoPHeaderValidator.class);
+    private static final Log log = LogFactory.getLog(DPoPHeaderValidator.class);
 
     /**
      * Extract DPoP header from the headers.
@@ -73,9 +73,10 @@ public class DPoPHeaderValidator {
         if (httpRequestHeaders != null) {
             for (HttpRequestHeader header : httpRequestHeaders) {
                 if (header != null && DPoPConstants.OAUTH_DPOP_HEADER.equalsIgnoreCase(header.getName())) {
-                    if (ArrayUtils.isNotEmpty(header.getValue())){
+                    if (ArrayUtils.isNotEmpty(header.getValue())) {
                         if (header.getValue().length > 1) {
-                            String error = "Exception occurred while extracting the DPoP proof header: Request contains multiple DPoP headers.";
+                            String error = "Exception occurred while extracting the DPoP proof header: " +
+                                    "Request contains multiple DPoP headers.";
                             log.error(error);
                             throw new IdentityOAuth2ClientException(DPoPConstants.INVALID_DPOP_PROOF, error);
                         }
@@ -139,7 +140,8 @@ public class DPoPHeaderValidator {
         SignedJWT signedJwt = SignedJWT.parse(dPoPProof);
         JWSHeader header = signedJwt.getHeader();
 
-        return validateDPoPPayload(httpMethod, httpURL, signedJwt.getJWTClaimsSet(), token) && validateDPoPHeader(header) ;
+        return validateDPoPPayload(httpMethod, httpURL, signedJwt.getJWTClaimsSet(), token) &&
+                validateDPoPHeader(header);
     }
 
     /**
@@ -190,11 +192,12 @@ public class DPoPHeaderValidator {
     }
 
     //Resource server side validator with "ath" claim validation
-    private static boolean validateDPoPPayload(String httpMethod, String httpURL, JWTClaimsSet jwtClaimsSet, String token)
-            throws IdentityOAuth2Exception {
+    private static boolean validateDPoPPayload(String httpMethod, String httpURL, JWTClaimsSet jwtClaimsSet,
+                                               String token) throws IdentityOAuth2Exception {
 
         return checkJwtClaimSet(jwtClaimsSet) && checkDPoPHeaderValidity(jwtClaimsSet) && checkJti(jwtClaimsSet) &&
-                checkHTTPMethod(httpMethod, jwtClaimsSet) && checkHTTPURI(httpURL, jwtClaimsSet) && checkAth(token, jwtClaimsSet);
+                checkHTTPMethod(httpMethod, jwtClaimsSet) && checkHTTPURI(httpURL, jwtClaimsSet) &&
+                checkAth(token, jwtClaimsSet);
     }
 
     private static boolean checkJwk(JWSHeader header) throws IdentityOAuth2ClientException {
@@ -235,7 +238,6 @@ public class DPoPHeaderValidator {
             }
             throw new IdentityOAuth2ClientException(DPoPConstants.INVALID_DPOP_PROOF, DPoPConstants.INVALID_DPOP_ERROR);
         }
-
         return true;
     }
 
@@ -282,7 +284,8 @@ public class DPoPHeaderValidator {
         return true;
     }
 
-    private static boolean checkHTTPMethod(String httpMethod, JWTClaimsSet jwtClaimsSet) throws IdentityOAuth2ClientException {
+    private static boolean checkHTTPMethod(String httpMethod, JWTClaimsSet jwtClaimsSet)
+            throws IdentityOAuth2ClientException {
 
         Object dPoPHttpMethod = jwtClaimsSet.getClaim(DPoPConstants.DPOP_HTTP_METHOD);
 
@@ -301,11 +304,11 @@ public class DPoPHeaderValidator {
             }
             throw new IdentityOAuth2ClientException(DPoPConstants.INVALID_DPOP_PROOF, DPoPConstants.INVALID_DPOP_ERROR);
         }
-
         return true;
     }
 
-    private static boolean checkHTTPURI(String httpUrl, JWTClaimsSet jwtClaimsSet) throws IdentityOAuth2ClientException {
+    private static boolean checkHTTPURI(String httpUrl, JWTClaimsSet jwtClaimsSet)
+            throws IdentityOAuth2ClientException {
 
         Object dPoPContextPath = jwtClaimsSet.getClaim(DPoPConstants.DPOP_HTTP_URI);
 
@@ -331,7 +334,7 @@ public class DPoPHeaderValidator {
                 (AbstractIdentityHandler.class.getName(), OauthDPoPInterceptorHandlerProxy.class.getName())
                 .getProperties().get(DPoPConstants.VALIDITY_PERIOD);
 
-        if (validityPeriodObject == null){
+        if (validityPeriodObject == null) {
             return DPoPConstants.DEFAULT_HEADER_VALIDITY;
         }
 

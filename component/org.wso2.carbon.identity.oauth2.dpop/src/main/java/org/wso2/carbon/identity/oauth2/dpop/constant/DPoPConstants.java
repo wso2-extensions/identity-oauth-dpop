@@ -37,8 +37,8 @@ public class DPoPConstants {
     public static final String INVALID_CLIENT_ERROR = "Invalid Client";
     public static final String ECDSA_ENCRYPTION = "EC";
     public static final String RSA_ENCRYPTION = "RSA";
-    public static final String HTTP_METHOD ="httpMethod";
-    public static final String HTTP_URL ="httpUrl";
+    public static final String HTTP_METHOD = "httpMethod";
+    public static final String HTTP_URL = "httpUrl";
     public static final String JTI = "jti";
     public static final String OAUTH_DPOP_HEADER = "DPoP";
     public static final String CNF = "cnf";

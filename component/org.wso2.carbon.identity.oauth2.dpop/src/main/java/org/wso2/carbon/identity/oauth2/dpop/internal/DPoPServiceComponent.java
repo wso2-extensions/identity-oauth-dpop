@@ -24,17 +24,20 @@ import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.wso2.carbon.identity.auth.service.handler.AuthenticationHandler;
+import org.wso2.carbon.identity.oauth.common.token.bindings.TokenBinderInfo;
+import org.wso2.carbon.identity.oauth.event.OAuthEventInterceptor;
+import org.wso2.carbon.identity.oauth2.IntrospectionDataProvider;
 import org.wso2.carbon.identity.oauth2.dpop.dao.DPoPTokenManagerDAOImpl;
 import org.wso2.carbon.identity.oauth2.dpop.handler.DPoPAuthenticationHandler;
 import org.wso2.carbon.identity.oauth2.dpop.introspection.dataprovider.DPoPIntrospectionDataProvider;
 import org.wso2.carbon.identity.oauth2.dpop.listener.OauthDPoPInterceptorHandlerProxy;
 import org.wso2.carbon.identity.oauth2.dpop.token.binder.DPoPBasedTokenBinder;
 import org.wso2.carbon.identity.oauth2.dpop.validators.DPoPTokenValidator;
-import org.wso2.carbon.identity.oauth.common.token.bindings.TokenBinderInfo;
-import org.wso2.carbon.identity.oauth.event.OAuthEventInterceptor;
-import org.wso2.carbon.identity.oauth2.IntrospectionDataProvider;
 import org.wso2.carbon.identity.oauth2.validators.OAuth2TokenValidator;
 
+/**
+ * OSGi service component for DPoP.
+ */
 @Component(
         name = "org.wso2.carbon.identity.oauth2.dpop",
         immediate = true)

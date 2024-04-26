@@ -20,9 +20,9 @@ package org.wso2.carbon.identity.oauth2.dpop.introspection.dataprovider;
 
 import org.json.simple.JSONObject;
 import org.wso2.carbon.identity.core.handler.AbstractIdentityHandler;
-import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
 import org.wso2.carbon.identity.oauth2.IntrospectionDataProvider;
+import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2IntrospectionResponseDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2TokenValidationRequestDTO;
 import org.wso2.carbon.identity.oauth2.model.AccessTokenDO;
@@ -45,10 +45,8 @@ public class DPoPIntrospectionDataProvider extends AbstractIdentityHandler imple
         AccessTokenDO accessTokenDO;
 
         if (isEnabled()) {
-
             accessTokenDO = OAuth2Util.findAccessToken(oAuth2TokenValidationRequestDTO.
                     getAccessToken().getIdentifier(), false);
-
             if (accessTokenDO.getTokenBinding() != null &&
                     DPoPConstants.DPOP_TOKEN_TYPE.equals(accessTokenDO.getTokenBinding().getBindingType())) {
                 introspectionData.put(DPoPConstants.TOKEN_TYPE, (DPoPConstants.DPOP_TOKEN_TYPE));

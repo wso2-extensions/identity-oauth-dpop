@@ -24,14 +24,14 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.core.handler.AbstractIdentityHandler;
 import org.wso2.carbon.identity.core.model.IdentityEventListenerConfig;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
-import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
-import org.wso2.carbon.identity.oauth2.dpop.dao.DPoPTokenManagerDAO;
-import org.wso2.carbon.identity.oauth2.dpop.internal.DPoPDataHolder;
-import org.wso2.carbon.identity.oauth2.dpop.validators.DPoPHeaderValidator;
 import org.wso2.carbon.identity.oauth.common.exception.InvalidOAuthClientException;
 import org.wso2.carbon.identity.oauth.event.AbstractOAuthEventInterceptor;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2ClientException;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
+import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
+import org.wso2.carbon.identity.oauth2.dpop.dao.DPoPTokenManagerDAO;
+import org.wso2.carbon.identity.oauth2.dpop.internal.DPoPDataHolder;
+import org.wso2.carbon.identity.oauth2.dpop.validators.DPoPHeaderValidator;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenReqDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenRespDTO;
 import org.wso2.carbon.identity.oauth2.token.OAuthTokenReqMessageContext;
@@ -102,8 +102,8 @@ public class OauthDPoPInterceptorHandlerProxy extends AbstractOAuthEventIntercep
         }
         try {
             String tokenBindingType = DPoPHeaderValidator.getApplicationBindingType(tokenReqDTO.getClientId());
-            TokenBinding tokenBinding =
-                    tokenBindingTypeManagerDao.getTokenBinding(tokenReqDTO.getRefreshToken(), OAuth2Util.isHashEnabled());
+            TokenBinding tokenBinding = tokenBindingTypeManagerDao.getTokenBinding(tokenReqDTO.getRefreshToken(),
+                            OAuth2Util.isHashEnabled());
             if (tokenBinding != null) {
                 if (!DPoPConstants.DPOP_TOKEN_TYPE.equals(tokenBindingType)) {
                     if (log.isDebugEnabled()) {
@@ -132,7 +132,8 @@ public class OauthDPoPInterceptorHandlerProxy extends AbstractOAuthEventIntercep
                     throw new IdentityOAuth2ClientException(DPoPConstants.INVALID_DPOP_PROOF,
                             DPoPConstants.INVALID_DPOP_ERROR);
                 }
-                if (!tokReqMsgCtx.getTokenBinding().getBindingValue().equalsIgnoreCase(tokenBinding.getBindingValue())) {
+                if (!tokReqMsgCtx.getTokenBinding().getBindingValue()
+                        .equalsIgnoreCase(tokenBinding.getBindingValue())) {
                     if (log.isDebugEnabled()) {
                         log.debug("DPoP proof thumbprint value of the public key is not equal to binding value from" +
                                 " the refresh token.");
@@ -161,7 +162,7 @@ public class OauthDPoPInterceptorHandlerProxy extends AbstractOAuthEventIntercep
     public void onPostTokenIssue(OAuth2AccessTokenReqDTO tokenReqDTO, OAuth2AccessTokenRespDTO tokenRespDTO,
                                  OAuthTokenReqMessageContext tokReqMsgCtx, Map<String, Object> params) {
 
-        setDPoPTokenType(tokReqMsgCtx,tokenRespDTO);
+        setDPoPTokenType(tokReqMsgCtx, tokenRespDTO);
     }
 
     /**
@@ -170,7 +171,8 @@ public class OauthDPoPInterceptorHandlerProxy extends AbstractOAuthEventIntercep
     @Override
     public void onPostTokenRenewal(OAuth2AccessTokenReqDTO tokenReqDTO, OAuth2AccessTokenRespDTO tokenRespDTO,
                                    OAuthTokenReqMessageContext tokReqMsgCtx, Map<String, Object> params) {
-        setDPoPTokenType(tokReqMsgCtx,tokenRespDTO);
+
+        setDPoPTokenType(tokReqMsgCtx, tokenRespDTO);
 
     }
 

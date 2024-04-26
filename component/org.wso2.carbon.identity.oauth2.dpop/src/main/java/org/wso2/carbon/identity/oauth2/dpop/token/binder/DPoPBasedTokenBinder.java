@@ -24,14 +24,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.core.handler.AbstractIdentityHandler;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
+import org.wso2.carbon.identity.oauth.config.OAuthServerConfiguration;
+import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
 import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
 import org.wso2.carbon.identity.oauth2.dpop.dao.DPoPTokenManagerDAO;
 import org.wso2.carbon.identity.oauth2.dpop.internal.DPoPDataHolder;
 import org.wso2.carbon.identity.oauth2.dpop.listener.OauthDPoPInterceptorHandlerProxy;
 import org.wso2.carbon.identity.oauth2.dpop.util.Utils;
 import org.wso2.carbon.identity.oauth2.dpop.validators.DPoPHeaderValidator;
-import org.wso2.carbon.identity.oauth.config.OAuthServerConfiguration;
-import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenReqDTO;
 import org.wso2.carbon.identity.oauth2.model.HttpRequestHeader;
 import org.wso2.carbon.identity.oauth2.token.bindings.TokenBinding;
@@ -206,7 +206,7 @@ public class DPoPBasedTokenBinder extends AbstractTokenBinder {
             ParseException {
 
         if (((HttpServletRequest) request).getRequestURI().equals(DPoPConstants.OAUTH_REVOKE_ENDPOINT) &&
-                skipDPoPValidationInRevoke()){
+                skipDPoPValidationInRevoke()) {
             return true;
         }
 
@@ -271,7 +271,7 @@ public class DPoPBasedTokenBinder extends AbstractTokenBinder {
                         (AbstractIdentityHandler.class.getName(), OauthDPoPInterceptorHandlerProxy.class.getName())
                 .getProperties().get(DPoPConstants.SKIP_DPOP_VALIDATION_IN_REVOKE);
 
-        if (skipDPoPValidationInRevokeObject == null){
+        if (skipDPoPValidationInRevokeObject == null) {
             return DPoPConstants.DEFAULT_SKIP_DPOP_VALIDATION_IN_REVOKE_VALUE;
         }
 
@@ -283,7 +283,6 @@ public class DPoPBasedTokenBinder extends AbstractTokenBinder {
             return DPoPConstants.DEFAULT_SKIP_DPOP_VALIDATION_IN_REVOKE_VALUE;
 
         }
-
         return Boolean.parseBoolean(skipDPoPValidationInRevokeValue);
     }
 }

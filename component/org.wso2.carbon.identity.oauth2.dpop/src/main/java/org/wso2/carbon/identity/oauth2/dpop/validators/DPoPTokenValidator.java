@@ -32,10 +32,10 @@ import org.wso2.carbon.identity.application.common.model.FederatedAuthenticatorC
 import org.wso2.carbon.identity.application.common.model.IdentityProvider;
 import org.wso2.carbon.identity.application.common.util.IdentityApplicationConstants;
 import org.wso2.carbon.identity.application.common.util.IdentityApplicationManagementUtil;
-import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
-import org.wso2.carbon.identity.oauth2.dpop.util.Utils;
 import org.wso2.carbon.identity.oauth.config.OAuthServerConfiguration;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
+import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
+import org.wso2.carbon.identity.oauth2.dpop.util.Utils;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2TokenValidationRequestDTO;
 import org.wso2.carbon.identity.oauth2.model.AccessTokenDO;
 import org.wso2.carbon.identity.oauth2.validators.OAuth2TokenValidationMessageContext;
@@ -330,7 +330,8 @@ public class DPoPTokenValidator implements OAuth2TokenValidator {
                 return false;
             }
 
-            if (!DPoPHeaderValidator.isValidDPoPProof(httpMethod, httpUrl, dpopProof, validationReqDTO.getRequestDTO().getAccessToken().getIdentifier())) {
+            if (!DPoPHeaderValidator.isValidDPoPProof(httpMethod, httpUrl, dpopProof,
+                    validationReqDTO.getRequestDTO().getAccessToken().getIdentifier())) {
                 return false;
             }
 

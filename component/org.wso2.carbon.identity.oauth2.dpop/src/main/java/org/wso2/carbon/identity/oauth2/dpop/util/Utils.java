@@ -30,9 +30,9 @@ import com.nimbusds.jwt.SignedJWT;
 import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
-import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2ClientException;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
+import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
 
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
@@ -53,7 +53,7 @@ public class Utils {
      *
      * @param dPopProof DPoP proof header.
      * @return Thumbprint value.
-     * @throws IdentityOAuth2ClientException Error while getting the thumbprint value.
+     * @throws IdentityOAuth2Exception Error while getting the thumbprint value.
      */
     public static String getThumbprintOfKeyFromDpopProof(String dPopProof) throws IdentityOAuth2Exception {
 
