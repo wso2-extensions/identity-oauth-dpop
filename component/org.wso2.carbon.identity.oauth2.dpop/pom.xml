@@ -70,6 +70,28 @@
             <groupId>org.wso2.carbon.identity.auth.rest</groupId>
             <artifactId>org.wso2.carbon.identity.auth.service</artifactId>
         </dependency>
+        <!--Test Dependencies-->
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jacoco</groupId>
+            <artifactId>org.jacoco.agent</artifactId>
+            <classifier>runtime</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-module-testng</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-api-mockito2</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -139,6 +161,29 @@
                             org.wso2.carbon.identity.oauth2.dpop.*; version="${project.version}"
                         </Export-Package>
                     </instructions>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven.surefire.plugin.version}</version>
+                <configuration>
+                    <argLine>
+                        --add-opens java.base/java.util=ALL-UNNAMED
+                        --add-opens java.base/java.lang=ALL-UNNAMED
+                        --add-opens java.base/java.lang.reflect=ALL-UNNAMED
+                    </argLine>
+                    <suiteXmlFiles>
+                        <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
+                    </suiteXmlFiles>
+                    <systemPropertyVariables>
+                        <jacoco-agent.destfile>target/jacoco.exec</jacoco-agent.destfile>
+                    </systemPropertyVariables>
+                    <reuseForks>true</reuseForks>
+                    <classpathDependencyExcludes>
+                        <classpathDependencyExclude>org.ops4j.pax.logging</classpathDependencyExclude>
+                        <classpathDependencyExclude>org.wso2.org.ops4j.pax.logging</classpathDependencyExclude>
+                    </classpathDependencyExcludes>
                 </configuration>
             </plugin>
         </plugins>
