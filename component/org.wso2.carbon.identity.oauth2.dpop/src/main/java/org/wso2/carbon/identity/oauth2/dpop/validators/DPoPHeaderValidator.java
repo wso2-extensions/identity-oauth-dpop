@@ -61,13 +61,20 @@ public class DPoPHeaderValidator {
 
     private static final Log log = LogFactory.getLog(DPoPHeaderValidator.class);
 
+    private static final DPoPHeaderValidator dPoPHeaderValidator = new DPoPHeaderValidator();
+
+    public static DPoPHeaderValidator getInstance() {
+
+        return dPoPHeaderValidator;
+    }
+
     /**
      * Extract DPoP header from the headers.
      *
      * @param tokReqMsgCtx Message context of token request.
      * @return DPoP header.
      */
-    public static String getDPoPHeader(OAuthTokenReqMessageContext tokReqMsgCtx) throws IdentityOAuth2ClientException {
+    public String getDPoPHeader(OAuthTokenReqMessageContext tokReqMsgCtx) throws IdentityOAuth2ClientException {
 
         HttpRequestHeader[] httpRequestHeaders = tokReqMsgCtx.getOauth2AccessTokenReqDTO().getHttpRequestHeaders();
         if (httpRequestHeaders != null) {
@@ -97,7 +104,7 @@ public class DPoPHeaderValidator {
      * @throws InvalidOAuthClientException Error while getting the Oauth application information.
      * @throws IdentityOAuth2Exception Error while getting the Oauth application information.
      */
-    public static String getApplicationBindingType(String consumerKey) throws
+    public String getApplicationBindingType(String consumerKey) throws
             IdentityOAuth2Exception, InvalidOAuthClientException {
 
         OAuthAppDO oauthAppDO = OAuth2Util.getAppInformationByClientId(consumerKey);
@@ -114,7 +121,7 @@ public class DPoPHeaderValidator {
      * @throws ParseException Error while retrieving the signedJwt.
      * @throws IdentityOAuth2Exception Error while validating the dpop proof.
      */
-    public static boolean isValidDPoPProof(String httpMethod, String httpURL, String dPoPProof)
+    public boolean isValidDPoPProof(String httpMethod, String httpURL, String dPoPProof)
             throws ParseException, IdentityOAuth2Exception {
 
         SignedJWT signedJwt = SignedJWT.parse(dPoPProof);
@@ -134,7 +141,7 @@ public class DPoPHeaderValidator {
      * @throws ParseException Error while retrieving the signedJwt.
      * @throws IdentityOAuth2Exception Error while validating the dpop proof.
      */
-    public static boolean isValidDPoPProof(String httpMethod, String httpURL, String dPoPProof, String token)
+    public boolean isValidDPoPProof(String httpMethod, String httpURL, String dPoPProof, String token)
             throws ParseException, IdentityOAuth2Exception  {
 
         SignedJWT signedJwt = SignedJWT.parse(dPoPProof);
@@ -153,7 +160,7 @@ public class DPoPHeaderValidator {
      * @return
      * @throws IdentityOAuth2Exception Error while validating the dpop proof.
      */
-    public static boolean isValidDPoP(String dPoPProof, OAuth2AccessTokenReqDTO tokenReqDTO,
+    public boolean isValidDPoP(String dPoPProof, OAuth2AccessTokenReqDTO tokenReqDTO,
             OAuthTokenReqMessageContext tokReqMsgCtx) throws IdentityOAuth2Exception {
 
         try {
@@ -178,13 +185,13 @@ public class DPoPHeaderValidator {
         return false;
     }
 
-    private static boolean validateDPoPHeader(JWSHeader header) throws IdentityOAuth2Exception {
+    private boolean validateDPoPHeader(JWSHeader header) throws IdentityOAuth2Exception {
 
         return checkJwk(header) && checkAlg(header) && checkHeaderType(header);
     }
 
     //Authorization server side validator without "ath" claim validation
-    private static boolean validateDPoPPayload(String httpMethod, String httpURL, JWTClaimsSet jwtClaimsSet)
+    private boolean validateDPoPPayload(String httpMethod, String httpURL, JWTClaimsSet jwtClaimsSet)
             throws IdentityOAuth2Exception {
 
         return checkJwtClaimSet(jwtClaimsSet) && checkDPoPHeaderValidity(jwtClaimsSet) && checkJti(jwtClaimsSet) &&
@@ -192,7 +199,7 @@ public class DPoPHeaderValidator {
     }
 
     //Resource server side validator with "ath" claim validation
-    private static boolean validateDPoPPayload(String httpMethod, String httpURL, JWTClaimsSet jwtClaimsSet,
+    private boolean validateDPoPPayload(String httpMethod, String httpURL, JWTClaimsSet jwtClaimsSet,
                                                String token) throws IdentityOAuth2Exception {
 
         return checkJwtClaimSet(jwtClaimsSet) && checkDPoPHeaderValidity(jwtClaimsSet) && checkJti(jwtClaimsSet) &&
@@ -200,7 +207,7 @@ public class DPoPHeaderValidator {
                 checkAth(token, jwtClaimsSet);
     }
 
-    private static boolean checkJwk(JWSHeader header) throws IdentityOAuth2ClientException {
+    private boolean checkJwk(JWSHeader header) throws IdentityOAuth2ClientException {
 
         JWK jwk = header.getJWK();
         if (jwk != null) {
@@ -218,7 +225,7 @@ public class DPoPHeaderValidator {
         throw new IdentityOAuth2ClientException(DPoPConstants.INVALID_DPOP_PROOF, DPoPConstants.INVALID_DPOP_ERROR);
     }
 
-    private static boolean checkAlg(JWSHeader header) throws IdentityOAuth2ClientException {
+    private boolean checkAlg(JWSHeader header) throws IdentityOAuth2ClientException {
 
         JWSAlgorithm algorithm = header.getAlgorithm();
         if (algorithm == null) {
@@ -230,7 +237,7 @@ public class DPoPHeaderValidator {
         return true;
     }
 
-    private static boolean checkHeaderType(JWSHeader header) throws IdentityOAuth2ClientException {
+    private boolean checkHeaderType(JWSHeader header) throws IdentityOAuth2ClientException {
 
         if (!DPoPConstants.DPOP_JWT_TYPE.equalsIgnoreCase(header.getType().toString())) {
             if (log.isDebugEnabled()) {
@@ -241,7 +248,7 @@ public class DPoPHeaderValidator {
         return true;
     }
 
-    private static boolean checkJwtClaimSet(JWTClaimsSet jwtClaimsSet) throws IdentityOAuth2ClientException {
+    private boolean checkJwtClaimSet(JWTClaimsSet jwtClaimsSet) throws IdentityOAuth2ClientException {
 
         if (jwtClaimsSet == null) {
             if (log.isDebugEnabled()) {
@@ -252,7 +259,7 @@ public class DPoPHeaderValidator {
         return true;
     }
 
-    private static boolean checkDPoPHeaderValidity(JWTClaimsSet jwtClaimsSet) throws IdentityOAuth2ClientException {
+    private boolean checkDPoPHeaderValidity(JWTClaimsSet jwtClaimsSet) throws IdentityOAuth2ClientException {
 
         Timestamp currentTimestamp = new Timestamp(new Date().getTime());
         Date issuedAt = (Date) jwtClaimsSet.getClaim(DPoPConstants.DPOP_ISSUED_AT);
@@ -273,7 +280,7 @@ public class DPoPHeaderValidator {
         return true;
     }
 
-    private static boolean checkJti(JWTClaimsSet jwtClaimsSet) throws IdentityOAuth2ClientException {
+    private boolean checkJti(JWTClaimsSet jwtClaimsSet) throws IdentityOAuth2ClientException {
 
         if (!jwtClaimsSet.getClaims().containsKey(DPoPConstants.JTI)) {
             if (log.isDebugEnabled()) {
@@ -284,7 +291,7 @@ public class DPoPHeaderValidator {
         return true;
     }
 
-    private static boolean checkHTTPMethod(String httpMethod, JWTClaimsSet jwtClaimsSet)
+    private boolean checkHTTPMethod(String httpMethod, JWTClaimsSet jwtClaimsSet)
             throws IdentityOAuth2ClientException {
 
         Object dPoPHttpMethod = jwtClaimsSet.getClaim(DPoPConstants.DPOP_HTTP_METHOD);
@@ -307,7 +314,7 @@ public class DPoPHeaderValidator {
         return true;
     }
 
-    private static boolean checkHTTPURI(String httpUrl, JWTClaimsSet jwtClaimsSet)
+    private boolean checkHTTPURI(String httpUrl, JWTClaimsSet jwtClaimsSet)
             throws IdentityOAuth2ClientException {
 
         Object dPoPContextPath = jwtClaimsSet.getClaim(DPoPConstants.DPOP_HTTP_URI);
@@ -329,7 +336,7 @@ public class DPoPHeaderValidator {
         return true;
     }
 
-    private static int getDPoPValidityPeriod() {
+    private int getDPoPValidityPeriod() {
         Object validityPeriodObject = IdentityUtil.readEventListenerProperty
                 (AbstractIdentityHandler.class.getName(), OauthDPoPInterceptorHandlerProxy.class.getName())
                 .getProperties().get(DPoPConstants.VALIDITY_PERIOD);
@@ -351,14 +358,14 @@ public class DPoPHeaderValidator {
         return DPoPConstants.DEFAULT_HEADER_VALIDITY;
     }
 
-    private static void setCnFValue(OAuthTokenReqMessageContext tokReqMsgCtx, String tokenBindingValue) {
+    private void setCnFValue(OAuthTokenReqMessageContext tokReqMsgCtx, String tokenBindingValue) {
 
         JSONObject obj = new JSONObject();
         obj.put(DPoPConstants.JWK_THUMBPRINT, tokenBindingValue);
         tokReqMsgCtx.addProperty(DPoPConstants.CNF, obj);
     }
 
-    private static boolean checkAth(String token, JWTClaimsSet jwtClaimsSet) throws IdentityOAuth2ClientException {
+    private boolean checkAth(String token, JWTClaimsSet jwtClaimsSet) throws IdentityOAuth2ClientException {
 
         Object ath = jwtClaimsSet.getClaim(DPoPConstants.DPOP_ACCESS_TOKEN_HASH);
         if (ath == null) {

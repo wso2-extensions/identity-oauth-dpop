@@ -230,7 +230,7 @@ public class DPoPBasedTokenBinder extends AbstractTokenBinder {
 
         String httpMethod = (((HttpServletRequest) request).getMethod());
         String httpUrl = (((HttpServletRequest) request).getRequestURL().toString());
-        if (!DPoPHeaderValidator.isValidDPoPProof(httpMethod, httpUrl, dpopHeader)) {
+        if (!DPoPHeaderValidator.getInstance().isValidDPoPProof(httpMethod, httpUrl, dpopHeader)) {
             return false;
         }
 
@@ -265,7 +265,7 @@ public class DPoPBasedTokenBinder extends AbstractTokenBinder {
         return supportedGrantTypesSet.toArray(new String[supportedGrantTypesSet.size()]);
     }
 
-    private static boolean skipDPoPValidationInRevoke() {
+    private boolean skipDPoPValidationInRevoke() {
 
         Object skipDPoPValidationInRevokeObject = IdentityUtil.readEventListenerProperty
                         (AbstractIdentityHandler.class.getName(), OauthDPoPInterceptorHandlerProxy.class.getName())
