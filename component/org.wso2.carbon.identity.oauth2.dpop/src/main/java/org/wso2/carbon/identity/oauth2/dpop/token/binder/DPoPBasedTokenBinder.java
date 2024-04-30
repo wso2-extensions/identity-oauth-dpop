@@ -55,7 +55,7 @@ import javax.servlet.http.HttpServletResponse;
 public class DPoPBasedTokenBinder extends AbstractTokenBinder {
 
     private static final String BINDING_TYPE = "DPoP";
-    private static final Log log = LogFactory.getLog(DPoPBasedTokenBinder.class);
+    private static final Log LOG = LogFactory.getLog(DPoPBasedTokenBinder.class);
     static Set<String> supportedGrantTypesSet = Collections.emptySet();
     private final DPoPTokenManagerDAO tokenBindingTypeManagerDao = DPoPDataHolder.getInstance().
             getTokenBindingTypeManagerDao();
@@ -117,7 +117,7 @@ public class DPoPBasedTokenBinder extends AbstractTokenBinder {
                 return validateDPoPHeader(request, tokenBinding);
             }
         } catch (IdentityOAuth2Exception | ParseException e) {
-            log.error("Error while getting the token binding value", e);
+            LOG.error("Error while getting the token binding value", e);
             return false;
         }
         return false;
@@ -213,16 +213,16 @@ public class DPoPBasedTokenBinder extends AbstractTokenBinder {
         if (!((HttpServletRequest) request).getRequestURI().equals(DPoPConstants.OAUTH_REVOKE_ENDPOINT) &&
                 !((HttpServletRequest) request).getHeader(DPoPConstants.AUTHORIZATION_HEADER)
                         .startsWith(DPoPConstants.OAUTH_DPOP_HEADER)) {
-            if (log.isDebugEnabled()) {
-                log.debug("DPoP prefix is not defined correctly in the Authorization header.");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("DPoP prefix is not defined correctly in the Authorization header.");
             }
             return false;
         }
         String dpopHeader = ((HttpServletRequest) request).getHeader(DPoPConstants.OAUTH_DPOP_HEADER);
 
         if (StringUtils.isBlank(dpopHeader)) {
-            if (log.isDebugEnabled()) {
-                log.debug("DPoP header is empty.");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("DPoP header is empty.");
             }
             return false;
 
@@ -238,15 +238,15 @@ public class DPoPBasedTokenBinder extends AbstractTokenBinder {
         String thumbprintOfPublicKey = Utils.getThumbprintOfKeyFromDpopProof(dpopHeader);
 
         if (StringUtils.isBlank(thumbprintOfPublicKey)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Thumbprint value of the public key is empty in the DPoP Proof.");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Thumbprint value of the public key is empty in the DPoP Proof.");
             }
             return false;
         }
 
         if (!thumbprintOfPublicKey.equalsIgnoreCase(tokenBinding.getBindingValue())) {
-            if (log.isDebugEnabled()) {
-                log.debug("Thumbprint value of the public key in the DPoP proof is not equal to binding value" +
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Thumbprint value of the public key in the DPoP proof is not equal to binding value" +
                         " of the responseDTO.");
             }
             return false;
@@ -279,7 +279,7 @@ public class DPoPBasedTokenBinder extends AbstractTokenBinder {
         String skipDPoPValidationInRevokeValue = skipDPoPValidationInRevokeObject.toString().trim();
 
         if (!("true".equals(skipDPoPValidationInRevokeValue) || "false".equals(skipDPoPValidationInRevokeValue))) {
-            log.info("Configured, skip dpop validation in revoke value is set to an invalid value. Hence the " +
+            LOG.info("Configured, skip dpop validation in revoke value is set to an invalid value. Hence the " +
                     "default value will be used.");
             return DPoPConstants.DEFAULT_SKIP_DPOP_VALIDATION_IN_REVOKE_VALUE;
 
