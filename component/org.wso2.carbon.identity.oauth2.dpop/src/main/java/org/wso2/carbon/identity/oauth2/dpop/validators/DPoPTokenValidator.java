@@ -330,7 +330,8 @@ public class DPoPTokenValidator implements OAuth2TokenValidator {
                 return false;
             }
 
-            if (!DPoPHeaderValidator.getInstance().isValidDPoPProof(httpMethod, httpUrl, dpopProof,
+            DPoPHeaderValidator dPoPHeaderValidator = new DPoPHeaderValidator();
+            if (!dPoPHeaderValidator.isValidDPoPProof(httpMethod, httpUrl, dpopProof,
                     validationReqDTO.getRequestDTO().getAccessToken().getIdentifier())) {
                 return false;
             }

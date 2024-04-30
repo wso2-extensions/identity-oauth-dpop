@@ -61,13 +61,6 @@ public class DPoPHeaderValidator {
 
     private static final Log log = LogFactory.getLog(DPoPHeaderValidator.class);
 
-    private static final DPoPHeaderValidator dPoPHeaderValidator = new DPoPHeaderValidator();
-
-    public static DPoPHeaderValidator getInstance() {
-
-        return dPoPHeaderValidator;
-    }
-
     /**
      * Extract DPoP header from the headers.
      *
