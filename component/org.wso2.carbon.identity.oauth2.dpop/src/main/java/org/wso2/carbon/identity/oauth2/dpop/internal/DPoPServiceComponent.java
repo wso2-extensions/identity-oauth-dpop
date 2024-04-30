@@ -49,23 +49,19 @@ public class DPoPServiceComponent {
     @Activate
     protected void activate(ComponentContext context) {
 
-        try {
-            DPoPDataHolder.getInstance().setTokenBindingTypeManagerDao(new DPoPTokenManagerDAOImpl());
-            context.getBundleContext().registerService(TokenBinderInfo.class.getName(),
-                    new DPoPBasedTokenBinder(), null);
-            context.getBundleContext().registerService(OAuthEventInterceptor.class,
-                    new OauthDPoPInterceptorHandlerProxy(new DPoPHeaderValidator()), null);
-            context.getBundleContext().registerService(AuthenticationHandler.class.getName(),
-                    new DPoPAuthenticationHandler(), null);
-            context.getBundleContext().registerService(IntrospectionDataProvider.class.getName(),
-                    new DPoPIntrospectionDataProvider(), null);
-            context.getBundleContext().registerService(OAuth2TokenValidator.class.getName(),
-                    new DPoPTokenValidator(), null);
-            if (log.isDebugEnabled()) {
-                log.debug("DPoPService is activated.");
-            }
-        } catch (Throwable e) {
-            log.error("Error while activating DPoPServiceComponent.", e);
+        DPoPDataHolder.getInstance().setTokenBindingTypeManagerDao(new DPoPTokenManagerDAOImpl());
+        context.getBundleContext().registerService(TokenBinderInfo.class.getName(),
+                new DPoPBasedTokenBinder(), null);
+        context.getBundleContext().registerService(OAuthEventInterceptor.class,
+                new OauthDPoPInterceptorHandlerProxy(new DPoPHeaderValidator()), null);
+        context.getBundleContext().registerService(AuthenticationHandler.class.getName(),
+                new DPoPAuthenticationHandler(), null);
+        context.getBundleContext().registerService(IntrospectionDataProvider.class.getName(),
+                new DPoPIntrospectionDataProvider(), null);
+        context.getBundleContext().registerService(OAuth2TokenValidator.class.getName(),
+                new DPoPTokenValidator(), null);
+        if (log.isDebugEnabled()) {
+            log.debug("DPoPService is activated.");
         }
     }
 }
