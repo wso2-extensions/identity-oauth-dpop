@@ -32,6 +32,7 @@ import org.wso2.carbon.identity.oauth2.dpop.handler.DPoPAuthenticationHandler;
 import org.wso2.carbon.identity.oauth2.dpop.introspection.dataprovider.DPoPIntrospectionDataProvider;
 import org.wso2.carbon.identity.oauth2.dpop.listener.OauthDPoPInterceptorHandlerProxy;
 import org.wso2.carbon.identity.oauth2.dpop.token.binder.DPoPBasedTokenBinder;
+import org.wso2.carbon.identity.oauth2.dpop.validators.DPoPHeaderValidator;
 import org.wso2.carbon.identity.oauth2.dpop.validators.DPoPTokenValidator;
 import org.wso2.carbon.identity.oauth2.validators.OAuth2TokenValidator;
 
@@ -53,7 +54,7 @@ public class DPoPServiceComponent {
             context.getBundleContext().registerService(TokenBinderInfo.class.getName(),
                     new DPoPBasedTokenBinder(), null);
             context.getBundleContext().registerService(OAuthEventInterceptor.class,
-                    new OauthDPoPInterceptorHandlerProxy(), null);
+                    new OauthDPoPInterceptorHandlerProxy(new DPoPHeaderValidator()), null);
             context.getBundleContext().registerService(AuthenticationHandler.class.getName(),
                     new DPoPAuthenticationHandler(), null);
             context.getBundleContext().registerService(IntrospectionDataProvider.class.getName(),

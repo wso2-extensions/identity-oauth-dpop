@@ -57,8 +57,8 @@ public class DPoPBasedTokenBinder extends AbstractTokenBinder {
     private static final String BINDING_TYPE = "DPoP";
     private static final Log log = LogFactory.getLog(DPoPBasedTokenBinder.class);
     static Set<String> supportedGrantTypesSet = Collections.emptySet();
-    private DPoPTokenManagerDAO
-            tokenBindingTypeManagerDao = DPoPDataHolder.getInstance().getTokenBindingTypeManagerDao();
+    private final DPoPTokenManagerDAO tokenBindingTypeManagerDao = DPoPDataHolder.getInstance().
+            getTokenBindingTypeManagerDao();
 
 
     @Override
@@ -230,7 +230,8 @@ public class DPoPBasedTokenBinder extends AbstractTokenBinder {
 
         String httpMethod = (((HttpServletRequest) request).getMethod());
         String httpUrl = (((HttpServletRequest) request).getRequestURL().toString());
-        if (!DPoPHeaderValidator.isValidDPoPProof(httpMethod, httpUrl, dpopHeader)) {
+        DPoPHeaderValidator dPoPHeaderValidator = new DPoPHeaderValidator();
+        if (!dPoPHeaderValidator.isValidDPoPProof(httpMethod, httpUrl, dpopHeader)) {
             return false;
         }
 
@@ -265,7 +266,7 @@ public class DPoPBasedTokenBinder extends AbstractTokenBinder {
         return supportedGrantTypesSet.toArray(new String[supportedGrantTypesSet.size()]);
     }
 
-    private static boolean skipDPoPValidationInRevoke() {
+    private boolean skipDPoPValidationInRevoke() {
 
         Object skipDPoPValidationInRevokeObject = IdentityUtil.readEventListenerProperty
                         (AbstractIdentityHandler.class.getName(), OauthDPoPInterceptorHandlerProxy.class.getName())
