@@ -27,12 +27,13 @@ public class DPoPJKTCacheKey implements Serializable {
 
     private String cacheKeyString;
 
+    private static final long serialVersionUID = 5023478840178742769L;
+
     public DPoPJKTCacheKey(String clientId, String authzCode) {
 
         this.cacheKeyString = clientId + ":" + authzCode;
     }
 
-    private static final long serialVersionUID = 5023478840178742769L;
     public String getCacheKeyString() {
 
         return cacheKeyString;

@@ -24,7 +24,6 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
-import org.wso2.carbon.identity.oauth.cache.OAuthCache;
 import org.wso2.carbon.identity.oauth.cache.SessionDataCache;
 import org.wso2.carbon.identity.oauth.cache.SessionDataCacheEntry;
 import org.wso2.carbon.identity.oauth.cache.SessionDataCacheKey;
@@ -75,7 +74,7 @@ public class DPoPEventHandler extends AbstractEventHandler {
                         DPoPJKTDAOImpl dpopJKTDAO = new DPoPJKTDAOImpl();
                         dpopJKTDAO.insertDPoPJKT(consumerKey, codeId, dpopJkt);
                         // Persist dpop_jkt in the cache
-                        if (OAuthCache.getInstance().isEnabled()) {
+                        if (DPoPJKTCache.getInstance().isEnabled()) {
                             DPoPJKTCacheKey dPoPJKTCacheKey = new DPoPJKTCacheKey(consumerKey,
                                     dpopJKTDAO.getAuthzCodeFromCodeId(codeId));
                             DPoPJKTCacheEntry dPoPJKTCacheEntry = new DPoPJKTCacheEntry(dpopJkt);

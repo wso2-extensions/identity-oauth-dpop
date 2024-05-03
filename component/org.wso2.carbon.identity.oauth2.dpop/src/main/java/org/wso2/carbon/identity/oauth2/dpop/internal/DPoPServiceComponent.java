@@ -55,8 +55,8 @@ public class DPoPServiceComponent {
     protected void activate(ComponentContext context) {
 
 
-        //TODO: Remove true and replace with the actual table check
-        boolean isAvailableTable = true; //&& IdentityDatabaseUtil.isTableExists(DPOP_JKT_TABLE_NAME);
+        //TODO: Remove false and replace with the actual table check
+        boolean isAvailableTable = false; //IdentityDatabaseUtil.isTableExists(DPOP_JKT_TABLE_NAME);
         if (LOG.isDebugEnabled()) {
             LOG.debug(DPOP_JKT_TABLE_NAME + " table is " + (isAvailableTable ? " " : "not ") + "available" +
                     "Setting isDPoPJKTTableEnabled to " + isAvailableTable);

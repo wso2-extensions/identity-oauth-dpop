@@ -21,7 +21,7 @@ package org.wso2.carbon.identity.oauth2.dpop.dao;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
 
 /**
- * Data Access Object Interface for DPoP JKT
+ * Data Access Object Interface for DPoP JKT.
  */
 public interface DPoPJKTDAO  {
 

@@ -31,6 +31,7 @@ public class DPoPConstants {
     public static final String DPOP_ACCESS_TOKEN_HASH = "ath";
     public static final String DPOP_JWT_TYPE = "dpop+jwt";
     public static final String DPOP_TOKEN_TYPE = "DPoP";
+    public static final String EXPIRED_DPOP_PROOF = "Expired DPoP Proof";
     public static final String INVALID_DPOP_PROOF = "invalid_dpop_proof";
     public static final String INVALID_DPOP_ERROR = "Invalid DPoP Proof";
     public static final String INVALID_CLIENT = "invalid_client";
