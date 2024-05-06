@@ -44,7 +44,7 @@ import org.wso2.carbon.identity.oauth2.validators.OAuth2TokenValidator;
         immediate = true)
 public class DPoPServiceComponent {
 
-    private static final Log log = LogFactory.getLog(DPoPServiceComponent.class);
+    private static final Log LOG = LogFactory.getLog(DPoPServiceComponent.class);
 
     @Activate
     protected void activate(ComponentContext context) {
@@ -60,8 +60,8 @@ public class DPoPServiceComponent {
                 new DPoPIntrospectionDataProvider(), null);
         context.getBundleContext().registerService(OAuth2TokenValidator.class.getName(),
                 new DPoPTokenValidator(), null);
-        if (log.isDebugEnabled()) {
-            log.debug("DPoPService is activated.");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("DPoPService is activated.");
         }
     }
 }

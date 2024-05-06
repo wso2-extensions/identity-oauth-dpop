@@ -43,7 +43,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class DPoPAuthenticationHandler extends AuthenticationHandler {
 
-    private static final Log log = LogFactory.getLog(DPoPAuthenticationHandler.class);
+    private static final Log LOG = LogFactory.getLog(DPoPAuthenticationHandler.class);
 
     @Override
     protected AuthenticationResult doAuthenticate(MessageContext messageContext) throws
@@ -75,8 +75,8 @@ public class DPoPAuthenticationHandler extends AuthenticationHandler {
                         oAuth2TokenValidationService.findOAuthConsumerIfTokenIsValid(requestDTO);
                 OAuth2TokenValidationResponseDTO responseDTO = clientApplicationDTO.getAccessTokenValidationResponse();
                 if (!responseDTO.isValid()) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(responseDTO.getErrorMsg());
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(responseDTO.getErrorMsg());
                     }
                     return authenticationResult;
                 }
