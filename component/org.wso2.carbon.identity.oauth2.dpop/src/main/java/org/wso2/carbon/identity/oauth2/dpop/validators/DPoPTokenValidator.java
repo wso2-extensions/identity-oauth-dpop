@@ -59,7 +59,7 @@ public class DPoPTokenValidator implements OAuth2TokenValidator {
 
     private static final String ALGO_PREFIX = "RS";
     private static final String DOT_SEPARATOR = ".";
-    private static final Log log = LogFactory.getLog(DPoPTokenValidator.class);
+    private static final Log LOG = LogFactory.getLog(DPoPTokenValidator.class);
     private static final String OIDC_IDP_ENTITY_ID = "IdPEntityId";
     private static final String ACCESS_TOKEN_DO = "AccessTokenDO";
 
@@ -222,8 +222,8 @@ public class DPoPTokenValidator implements OAuth2TokenValidator {
             throw new IdentityOAuth2Exception("Algorithm must not be null.");
 
         } else {
-            if (log.isDebugEnabled()) {
-                log.debug("Signature Algorithm found in the Token Header: " + alg);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Signature Algorithm found in the Token Header: " + alg);
             }
             if (alg.indexOf(ALGO_PREFIX) == 0) {
                 // At this point 'x509Certificate' will never be null.
@@ -234,8 +234,8 @@ public class DPoPTokenValidator implements OAuth2TokenValidator {
                     throw new IdentityOAuth2Exception("Public key is not an RSA public key.");
                 }
             } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("Signature Algorithm not supported yet: " + alg);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Signature Algorithm not supported yet: " + alg);
                 }
             }
             if (verifier == null) {
@@ -244,8 +244,8 @@ public class DPoPTokenValidator implements OAuth2TokenValidator {
         }
 
         boolean isValid = signedJWT.verify(verifier);
-        if (log.isDebugEnabled()) {
-            log.debug("Signature verified: " + isValid);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Signature verified: " + isValid);
         }
         return isValid;
     }
@@ -256,8 +256,8 @@ public class DPoPTokenValidator implements OAuth2TokenValidator {
         long expirationTimeInMillis = expirationTime.getTime();
         long currentTimeInMillis = System.currentTimeMillis();
         if ((currentTimeInMillis + timeStampSkewMillis) > expirationTimeInMillis) {
-            if (log.isDebugEnabled()) {
-                log.debug("Token is expired." +
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Token is expired." +
                         ", Expiration Time(ms) : " + expirationTimeInMillis +
                         ", TimeStamp Skew : " + timeStampSkewMillis +
                         ", Current Time : " + currentTimeInMillis + ". Token Rejected and validation terminated.");
@@ -265,8 +265,8 @@ public class DPoPTokenValidator implements OAuth2TokenValidator {
             return false;
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("Expiration Time(exp) of Token was validated successfully.");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Expiration Time(exp) of Token was validated successfully.");
         }
         return true;
     }
@@ -278,16 +278,16 @@ public class DPoPTokenValidator implements OAuth2TokenValidator {
             long notBeforeTimeMillis = notBeforeTime.getTime();
             long currentTimeInMillis = System.currentTimeMillis();
             if (currentTimeInMillis + timeStampSkewMillis < notBeforeTimeMillis) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Token is used before Not_Before_Time." +
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Token is used before Not_Before_Time." +
                             ", Not Before Time(ms) : " + notBeforeTimeMillis +
                             ", TimeStamp Skew : " + timeStampSkewMillis +
                             ", Current Time : " + currentTimeInMillis + ". Token Rejected and validation terminated.");
                 }
                 throw new IdentityOAuth2Exception("Token is used before Not_Before_Time.");
             }
-            if (log.isDebugEnabled()) {
-                log.debug("Not Before Time(nbf) of Token was validated successfully.");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Not Before Time(nbf) of Token was validated successfully.");
             }
         }
         return true;
@@ -324,8 +324,8 @@ public class DPoPTokenValidator implements OAuth2TokenValidator {
             String httpUrl = getResourceFromMessageContext(validationReqDTO, DPoPConstants.HTTP_URL);
 
             if (StringUtils.isBlank(dpopProof)) {
-                if (log.isDebugEnabled()) {
-                    log.debug("DPoP header is empty.");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("DPoP header is empty.");
                 }
                 return false;
             }
@@ -339,15 +339,15 @@ public class DPoPTokenValidator implements OAuth2TokenValidator {
             String thumbprintOfPublicKey = Utils.getThumbprintOfKeyFromDpopProof(dpopProof);
 
             if (StringUtils.isBlank(thumbprintOfPublicKey)) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Thumbprint value of the public key is empty in the DPoP Proof.");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Thumbprint value of the public key is empty in the DPoP Proof.");
                 }
                 return false;
             }
 
             if (!thumbprintOfPublicKey.equalsIgnoreCase(accessTokenDO.getTokenBinding().getBindingValue())) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Thumbprint value of the public key in the DPoP proof is not equal to binding value" +
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Thumbprint value of the public key in the DPoP proof is not equal to binding value" +
                             " of the responseDTO.");
                 }
                 return false;
