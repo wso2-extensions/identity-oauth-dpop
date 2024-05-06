@@ -461,7 +461,7 @@
         <!--Test Dependencies-->
         <commons.collections.version>3.2.2</commons.collections.version>
         <testng.version>6.9.10</testng.version>
-        <jacoco.version>0.7.9</jacoco.version>
+        <jacoco.version>0.8.7</jacoco.version>
         <powermock.version>2.0.9</powermock.version>
         <maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version>
         <javaee.web.api.version>7.0</javaee.web.api.version>
