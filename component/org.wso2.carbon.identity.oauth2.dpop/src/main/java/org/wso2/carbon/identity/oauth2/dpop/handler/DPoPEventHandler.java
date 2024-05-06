@@ -55,21 +55,21 @@ public class DPoPEventHandler extends AbstractEventHandler {
 
         if (StringUtils.equals(OIDCConstants.Event.POST_ISSUE_CODE, event.getEventName())) {
 
-            String codeId  = event.getEventProperties().get(OIDCConstants.Event.CODE_ID).toString();
+            // Get the code id and session data key from the event
+            String codeId = event.getEventProperties().get(OIDCConstants.Event.CODE_ID).toString();
             String sessionDataKey = event.getEventProperties().get(OIDCConstants.Event.SESSION_DATA_KEY).toString();
             SessionDataCacheEntry sessionDataCacheEntry = SessionDataCache.getInstance()
                     .getValueFromCache(new SessionDataCacheKey(sessionDataKey));
 
-            if (sessionDataCacheEntry.getParamMap().containsKey(DPoPConstants.DPOP_JKT)) {
-                String dpopJkt = sessionDataCacheEntry.getParamMap().get(DPoPConstants.DPOP_JKT)[0];
-                String consumerKey = sessionDataCacheEntry.getParamMap().get(DPoPConstants.CLIENT_ID)[0];
-                try {
-                    DPoPHeaderValidator dPoPHeaderValidator = new DPoPHeaderValidator();
-                    String tokenBindingType = dPoPHeaderValidator.getApplicationBindingType(consumerKey);
+            String consumerKey = sessionDataCacheEntry.getParamMap().get(DPoPConstants.CLIENT_ID)[0];
+            try {
+                DPoPHeaderValidator dPoPHeaderValidator = new DPoPHeaderValidator();
+                String tokenBindingType = dPoPHeaderValidator.getApplicationBindingType(consumerKey);
+                if (DPoPConstants.DPOP_TOKEN_TYPE.equals(tokenBindingType) &&
+                        sessionDataCacheEntry.getParamMap().containsKey(DPoPConstants.DPOP_JKT)) {
 
-                    if (DPoPConstants.DPOP_TOKEN_TYPE.equals(tokenBindingType) &&
-                            DPoPDataHolder.isDPoPJKTTableEnabled()) {
-
+                    String dpopJkt = sessionDataCacheEntry.getParamMap().get(DPoPConstants.DPOP_JKT)[0];
+                    if (DPoPDataHolder.isDPoPJKTTableEnabled()) {
                         // Persist dpop_jkt in the DB
                         DPoPJKTDAOImpl dpopJKTDAO = new DPoPJKTDAOImpl();
                         dpopJKTDAO.insertDPoPJKT(consumerKey, codeId, dpopJkt);
@@ -80,15 +80,14 @@ public class DPoPEventHandler extends AbstractEventHandler {
                             DPoPJKTCacheEntry dPoPJKTCacheEntry = new DPoPJKTCacheEntry(dpopJkt);
                             DPoPJKTCache.getInstance().addToCache(dPoPJKTCacheKey, dPoPJKTCacheEntry);
                             if (LOG.isDebugEnabled()) {
-                                LOG.debug("dpop_jkt was added to the cache for client id : " +
-                                        consumerKey);
+                                LOG.debug("dpop_jkt was added to the cache for client id : " + consumerKey);
                             }
                         }
                     }
-                } catch (InvalidOAuthClientException | IdentityOAuth2Exception e) {
-                    LOG.error("Error while persisting dpop_jkt for the client id : " + consumerKey, e);
-                    throw new IdentityEventException(DPoPConstants.INVALID_CLIENT, DPoPConstants.INVALID_CLIENT_ERROR);
                 }
+            } catch (InvalidOAuthClientException | IdentityOAuth2Exception e) {
+                LOG.error("Error while persisting dpop_jkt for the client id : " + consumerKey, e);
+                throw new IdentityEventException(DPoPConstants.INVALID_CLIENT, DPoPConstants.INVALID_CLIENT_ERROR);
             }
         }
     }

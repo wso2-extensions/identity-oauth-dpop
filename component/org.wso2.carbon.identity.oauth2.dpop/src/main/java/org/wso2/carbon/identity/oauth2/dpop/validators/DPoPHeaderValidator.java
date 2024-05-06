@@ -31,7 +31,6 @@ import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
 import org.wso2.carbon.identity.core.handler.AbstractIdentityHandler;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
-import org.wso2.carbon.identity.oauth.cache.OAuthCache;
 import org.wso2.carbon.identity.oauth.common.exception.InvalidOAuthClientException;
 import org.wso2.carbon.identity.oauth.dao.OAuthAppDO;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2ClientException;
@@ -41,6 +40,7 @@ import org.wso2.carbon.identity.oauth2.dpop.cache.DPoPJKTCacheEntry;
 import org.wso2.carbon.identity.oauth2.dpop.cache.DPoPJKTCacheKey;
 import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
 import org.wso2.carbon.identity.oauth2.dpop.dao.DPoPJKTDAOImpl;
+import org.wso2.carbon.identity.oauth2.dpop.internal.DPoPDataHolder;
 import org.wso2.carbon.identity.oauth2.dpop.listener.OauthDPoPInterceptorHandlerProxy;
 import org.wso2.carbon.identity.oauth2.dpop.util.Utils;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenReqDTO;
@@ -168,7 +168,9 @@ public class DPoPHeaderValidator {
             if (isValidDPoPProof(httpMethod, httpURL, dPoPProof)) {
                 String thumbprint = Utils.getThumbprintOfKeyFromDpopProof(dPoPProof);
                 if (StringUtils.isNotBlank(thumbprint)) {
-                    validateDPoPJKT(tokenReqDTO, thumbprint);
+                    if (DPoPDataHolder.isDPoPJKTTableEnabled()) {
+                        validateDPoPJKT(tokenReqDTO, thumbprint);
+                    }
                     TokenBinding tokenBinding = new TokenBinding();
                     tokenBinding.setBindingType(DPoPConstants.DPOP_TOKEN_TYPE);
                     tokenBinding.setBindingValue(thumbprint);
@@ -404,7 +406,7 @@ public class DPoPHeaderValidator {
     private String getPersistedDPoPJKT(String clientId, String authzCode)
             throws IdentityOAuth2Exception {
 
-        if (OAuthCache.getInstance().isEnabled()) {
+        if (DPoPJKTCache.getInstance().isEnabled()) {
             DPoPJKTCacheKey cacheKey = new DPoPJKTCacheKey(clientId, authzCode);
             DPoPJKTCacheEntry cacheEntry = DPoPJKTCache.getInstance().getValueFromCache(cacheKey);
             if (cacheEntry != null) {
@@ -414,8 +416,7 @@ public class DPoPHeaderValidator {
                 return (dpopJKT == null) ? "" : dpopJKT;
             } else {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("dpop_jkt info was not available in cache for client id : "
-                            + clientId);
+                    LOG.debug("dpop_jkt info was not available in cache for client id : " + clientId);
                 }
             }
         }
