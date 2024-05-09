@@ -37,6 +37,10 @@ enable = true
 properties.header_validity_period = 90
 properties.skip_dpop_validation_in_revoke = "true"
 
+[[event_handler]]
+name= "dpopEventHandler"
+subscriptions =["POST_ISSUE_CODE"]
+
 [[oauth.custom_token_validator]]
 type = "dpop"
 class = "org.wso2.carbon.identity.oauth2.dpop.validators.DPoPTokenValidator"
