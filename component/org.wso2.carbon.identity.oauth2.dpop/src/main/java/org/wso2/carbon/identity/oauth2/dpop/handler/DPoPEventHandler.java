@@ -85,8 +85,11 @@ public class DPoPEventHandler extends AbstractEventHandler {
                         }
                     }
                 }
-            } catch (InvalidOAuthClientException | IdentityOAuth2Exception e) {
-                LOG.error("Error while persisting dpop_jkt for the client id : " + consumerKey, e);
+            } catch (IdentityOAuth2Exception e) {
+                LOG.error("Error while handling POST_ISSUE_CODE event for the consumer key : " + consumerKey, e);
+                throw new IdentityEventException(e.getErrorCode(), e.getMessage());
+            } catch (InvalidOAuthClientException e) {
+                LOG.error("Client Authentication failed for the client id : " + consumerKey, e);
                 throw new IdentityEventException(DPoPConstants.INVALID_CLIENT, DPoPConstants.INVALID_CLIENT_ERROR);
             }
         }
