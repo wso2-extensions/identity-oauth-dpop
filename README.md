@@ -1,21 +1,34 @@
 # DPoP component
 
-DPoP ( Demonstrating Proof of Possession ) is an additional security mechanism for the token
-generation which overcomes the issue of bearer token which will not validate between who is
-requested token and who is actually using the token for the access of a particular resource.The specification defines a mechanism to prevent illegal API calls from succeeding only with a stolen access token. In the traditional mechanism, API access is allowed only if the access token presented by the client application is valid
+In traditional OAuth2 flows, presenting a valid Bearer token is proof enough to gain access to a protected resource. 
+That means if a Bearer token gets into the hands of an unauthorized actor, they can impersonate the user and get 
+unauthorized access to the protected resources. The resource server cannot validate the legitimacy of the sender and 
+will grant access to whoever bears a valid token.A solution to this problem is to use sender-constrained tokens.
+
+Demonstrating Proof of Possession (DPoP) is an application-level mechanism for sender-constraining OAuth access and 
+refresh tokens. It enables a client to prove the possession of a public/private key pair by including a DPoP header in 
+an HTTP request. The value of the header is a JSON Web Token (JWT) that enables the authorization server to bind issued 
+tokens to the public part of a client's key pair. Recipients of such tokens are then able to verify the binding of the 
+token to the key pair that the client has demonstrated that it holds via the DPoP header, thereby providing some 
+assurance that the client presenting the token also possesses the private key. In other words, the legitimate presenter 
+of the token is constrained to be the sender that holds and proves possession of the private part of the key pair.
 
 ## Specification 
-https://datatracker.ietf.org/doc/html/draft-ietf-oauth-dpop-02
+https://datatracker.ietf.org/doc/html/rfc9449
 
 ## Design 
 
-### Sequence Diagram.
+### Sequence Diagrams.
+#### 1. DPoP bound authorization code request
+![AuthzCodeBinding](https://github.com/wso2-extensions/identity-oauth-dpop/assets/110591829/807e5904-e230-458e-b7ba-4db48c829833)
 
-1. DPoP token request
+#### 2. DPoP bound push authorization request
+![Blank diagram - Page 2](https://github.com/wso2-extensions/identity-oauth-dpop/assets/110591829/cc696840-de86-4d9b-88dd-5e6d7f3bb12c)
+
+#### 3. DPoP token request
 ![Screenshot from 2021-10-25 23-06-12](https://user-images.githubusercontent.com/26603378/138743329-5cc54271-08a6-44ec-938e-d675bdd24717.png)
 
-
-2. Invoking protected APIs with DPoP token and DPoP proof.
+#### 4. Invoking protected APIs with DPoP token and DPoP proof.
 ![Invoke API(2)](https://user-images.githubusercontent.com/26603378/138742776-3d2c2714-c87e-4f77-9dce-24fde3df600e.jpeg)
 
 ### Sample client application to create dpop proof
@@ -24,8 +37,8 @@ PR : [wso2 /samples-is#302 ](https://github.com/wso2/samples-is/pull/302 )
 ### Deployment Instructions
 
 1. Build the project using mvn clean install.
-2. Add the  org.wso2.carbon.identity.dpop-2.4.3-SNAPSHOT.jar JAR into the <IS_HOME>/repository/components/dropins folder.
-3. Add the below configuration to deployment.toml file.
+2. Add the org.wso2.carbon.identity.oauth2.dpop-1.X.X-SNAPSHOT.jar JAR into the <IS_HOME>/repository/components/dropins folder.
+3. Add the below configuration to <IS_HOME>/repository/conf/deployment.toml file.
 
  ```
 [[event_listener]]
@@ -46,20 +59,62 @@ type = "dpop"
 class = "org.wso2.carbon.identity.oauth2.dpop.validators.DPoPTokenValidator"
 ```
 4. Restart the Identity Server.
-5. Sign in to the Management Console and navigate to
-   ```Service Providers -> List -> Edit -> Inbound Authentication Configuration ->OAuth OpenID Connect Configuration -> Edit```
-6. Enable DPoP Based Access token binding type and Validate token bindings.
+5. Sign in to the Management Console.
+6. Navigate to the `Applications` section & select the application you want to configure DPoP.
+7. In the application configurations page, navigate to the `Protocol` tab.
+8. Scroll down to the `Token binding type` section & select `DPoP` from the options.
 
-![Screenshot from 2021-10-25 23-08-05](https://user-images.githubusercontent.com/26603378/138743547-c6d71a23-e654-463b-9650-2cebdf37268d.png)
+![img_1.png](img_1.png)
 
 ### Sample Usage Instructions
 
-1. Access Token from Password :
+#### 1. DPoP bound Authorization Code Request :
+
+```
+curl --location --request GET 'https://localhost:9443/oauth2/authorize? \
+response_type=code \
+&client_id=T3fCPO8eV0sR3wX9Yf14X38v0Eka \
+&redirect_uri=https%3A%2F%2Foauth.pstmn.io%2Fv1%2Fcallback \
+&dpop_jkt=C07a9MZgz5wYywPc39Tw81gE8QzhkpC14sjx-2pAwbI'
+```
+The additional authorization request parameter `dpop_jkt` is used to bind the issued authorization code to the client's proof-of-possession key.
+This binding will enable end-to-end binding of the entire authorization flow.
+
+Including this parameter in authorization request is **OPTIONAL** .If not included, the authorization code will not be 
+bound to the client's proof-of-possession key. 
+
+#### 2. DPoP bound Push Authorization Request :
+
+```
+curl --location --request POST 'https://localhost:9443/oauth2/par' \
+--header 'Content-Type: application/x-www-form-urlencoded' \
+--header 'dpop: eyJ0eXAiOiJkcG9wK2p3dCIsImFsZyI6IkVTMjU2IiwiandrIjp7Imt0eSI6IkVDIiwiY3J2IjoiUC0yNTYiLCJ4IjoiLTZGNGlydjc2andTaUxIZWJWemtzTGZqdFhZcGxTOVJ3bXZKRmRScC1yYyIsInkiOiJHYlZDRzBDM0xIQjlVbzdDSW9KZUIydk5BaHRlR05EcUh3VmNNRXV5QUkwIn19.eyJodG0iOiJQT1NUIiwic3ViIjoic3ViIiwibmJmIjoxNzE1NjY3MzUyLCJpc3MiOiJpc3N1ZXIiLCJodHUiOiJodHRwczpcL1wvbG9jYWxob3N0Ojk0NDNcL29hdXRoMlwvcGFyIiwiaWF0IjoxNzE1NjY3MzUyLCJqdGkiOiI1ZjFjZWM4ZS1iM2I0LTQ3YTctOGE0NC1lNDc5NWUxNmJiZWUifQ.ltp0hesGvn1YYYPs3RpeaWaoe7cgXzZHNrFmllPGsUO3AH_cG4lMzt1iXz7VlWZtTPgAy9-WeOpdyZ8os-1PKQ' \
+--data-urlencode 'response_type=code' \
+--data-urlencode 'client_id=T3fCPO8eV0sR3wX9Yf14X38v0Eka' \
+--data-urlencode 'redirect_uri=https://oauth.pstmn.io/v1/callback' \
+--data-urlencode 'dpop_jkt=C07a9MZgz5wYywPc39Tw81gE8QzhkpC14sjx-2pAwbI'
+```
+When Pushed Authorization Requests (PAR) are used in conjunction with DPoP, there are two ways in which the DPoP key can
+be communicated in the PAR request:
+
+- Including the `dpop_jkt` parameter alongside other authorization request parameters in the POST body of the PAR 
+request.
+- Including the `DPoP` header in the PAR request.
+
+One of the above methods is sufficient to bind the issued authorization code to the client's proof-of-possession key.
+
+If both mechanisms are used at the same time, the authorization server will reject the request if the JWK Thumbprint in 
+dpop_jkt does not match the public key in the DPoP header.
+
+Similar to the authorization code request, including the `dpop_jkt` parameter or DPoP header in the PAR request is 
+**OPTIONAL**. If not included, the authorization code will not be bound to the client's proof-of-possession key.
+
+#### 3. Access Token from Password :
 
 ```
 curl --location --request POST 'https://localhost:9443/oauth2/token' \
 --header 'Content-Type: application/x-www-form-urlencoded' \
---header 'dpop: eyJ0eXAiOiJkcG9wK2p3dCIsImFsZyI6IlJTMzg0IiwiandrIjp7Imt0eSI6IlJTQSIsImUiOiJBUUFCIiwibiI6ImgyNlFBSUQtQWhyTmdac2FyX1pmUzM2aUtrTVQ0ZWR2YVJ3eHBheVFSVUlyV29qdENtZ0tCUnRXSllzSmJfQmJ5ZWJnb3gxVXhnaHRjMWNGVFFueVF6aDNHTHRfZXh5ajJ5Y2lFRHhUVTgyTHllT2ZaTnpVQTF0cjBPOFNtdVp4NWxSNnZKYTlMSFFYLXNYdFRsNVBMOWpHNDJVeENnZ3VETG5EZzJUcUMtWmNmdnItMER0OXFJNS1CdVo0TmZTQmE3WlBFeGZ0d2RuemVnRHJOemlfbEFDM0drRUs4dmdHYjFDc0hVS0dUdXZsX0MzX2JtVU50ZzdVdURYdEVyQmRxOHlxc0NHQ3lzSGs5YlBodkZ1bXJaQS1lU0pEQTlpMFYzOUJnaTZUYUpqNU5PZ0hkUFVET0lmUzF6aXE5WlVNR0NRdlJuN3hsN2N2X01MTUNTVElhdyJ9fQ.eyJodG0iOiJQT1NUIiwic3ViIjoic3ViIiwibmJmIjoxNjMyNzUzODQwLCJpc3MiOiJpc3N1ZXIiLCJodHUiOiJodHRwczpcL1wvbG9jYWxob3N0Ojk0NDNcL29hdXRoMlwvdG9rZW4iLCJpYXQiOjE2MzI3NTM4NDAsImp0aSI6IjE2MGVlYjIwLTVjN2EtNDM4ZC05YmI2LTY5ZTY0ZmU2N2ZjYiJ9.IMTqfcHtrlyJM9NqSuVulN2n2yWDgHkzRroxDF764HZrfThoJHp6YAx9PnSRjb652I5agZy48UZehKUiQ-tIXvW-vU8-C_3oeaOIMbTrXKDPHh41_1udw3B_zNkdwOPlyyNgFFRk_vzcV7yV7JdLaJVmMKmbNcqWE5zj7SbvorXhIzhVTL0XKhC1RzcuGImJYwzEUsAp0EWKHmD5Io46WQgY_Qauqzlyat2NYp797yySjfsIXxtFhlv_dsnMwBG4_-qWuwKCWLbUS1dEctwpv3cRqmt3L1ICQK7-t6CorhKy3MxWn7uM0viM7Jm0tjZbz3PYl5aDA55bqUAst9IlsQ' \
+--header 'dpop: eyJ0eXAiOiJkcG9wK2p3dCIsImFsZyI6IkVTMjU2IiwiandrIjp7Imt0eSI6IkVDIiwiY3J2IjoiUC0yNTYiLCJ4IjoiLTZGNGlydjc2andTaUxIZWJWemtzTGZqdFhZcGxTOVJ3bXZKRmRScC1yYyIsInkiOiJHYlZDRzBDM0xIQjlVbzdDSW9KZUIydk5BaHRlR05EcUh3VmNNRXV5QUkwIn19.eyJodG0iOiJQT1NUIiwic3ViIjoic3ViIiwibmJmIjoxNzE1NjY3NDU5LCJpc3MiOiJpc3N1ZXIiLCJodHUiOiJodHRwczpcL1wvbG9jYWxob3N0Ojk0NDNcL29hdXRoMlwvdG9rZW4iLCJpYXQiOjE3MTU2Njc0NTksImp0aSI6Ijc3NTBjMmQzLTRjNDMtNGY2Ny04MDM1LTEwNWE5YzRmNDgwZCJ9.B-DbYKd95ZKfOrBTHINOwIM-UW0bg8BPY6wWW07M9-jvX_Jm8lKAeCBrp0fDQe7su2vTl0Dcsgxw1OQVJG1eFw' \
 --header 'Authorization: Basic ajdPOWVqbmpUSUN1VFl4cGMwamQ4MjJvU2FjYTpmREJzSXB5djlYS1lOVUxfQWs1QTM0NFh6cUVh' \
 --data-urlencode 'grant_type=password' \
 --data-urlencode 'username=admin' \
@@ -80,28 +135,32 @@ curl --location --request POST 'https://localhost:9443/oauth2/token' \
 }
 ```
 
-2. Access Token from Refresh Token :
+#### 4. Access Token from Refresh Token :
 
 ```
 curl --location --request POST 'https://localhost:9443/oauth2/token' \
 --header 'Content-Type: application/x-www-form-urlencoded' \
---header 'dpop: eyJ0eXAiOiJkcG9wK2p3dCIsImFsZyI6IkVTMjU2IiwiandrIjp7Imt0eSI6IkVDIiwiY3J2IjoiUC0yNTYiLCJ4IjoibkNmX3lscldjMTVtejVJZWxSQmJ2TGhLbFV1em4zd1dDSW9ReHVOUThlVSIsInkiOiJhMmU3OTU3S2c3aTVxTUE5UHVpandmSE9nMk95QlRsZ0pVaEhzWGtNaGZnIn19.eyJodG0iOiJQT1NUIiwic3ViIjoic3ViIiwibmJmIjoxNjUyMzY5ODE5LCJpc3MiOiJpc3N1ZXIiLCJodHUiOiJodHRwczpcL1wvbG9jYWxob3N0Ojk0NDNcL29hdXRoMlwvdG9rZW4iLCJpYXQiOjE2NTIzNjk4MTksImp0aSI6IjVhOWY0NDI5LWU2ZDMtNGE3NS1iZTU4LTViOTZhZGY4MTcyZiJ9.DIwqvVuG_JZYM1dOGha6CANCM4RUC-5MQQkYsbTDKJfMpgR8akYoOSQigDpPMJqbrQFqXq6FXQoPOEJVqlMiqA' \
+--header 'dpop: eyJ0eXAiOiJkcG9wK2p3dCIsImFsZyI6IkVTMjU2IiwiandrIjp7Imt0eSI6IkVDIiwiY3J2IjoiUC0yNTYiLCJ4IjoiLTZGNGlydjc2andTaUxIZWJWemtzTGZqdFhZcGxTOVJ3bXZKRmRScC1yYyIsInkiOiJHYlZDRzBDM0xIQjlVbzdDSW9KZUIydk5BaHRlR05EcUh3VmNNRXV5QUkwIn19.eyJodG0iOiJQT1NUIiwic3ViIjoic3ViIiwibmJmIjoxNzE1NjY3NDU5LCJpc3MiOiJpc3N1ZXIiLCJodHUiOiJodHRwczpcL1wvbG9jYWxob3N0Ojk0NDNcL29hdXRoMlwvdG9rZW4iLCJpYXQiOjE3MTU2Njc0NTksImp0aSI6Ijc3NTBjMmQzLTRjNDMtNGY2Ny04MDM1LTEwNWE5YzRmNDgwZCJ9.B-DbYKd95ZKfOrBTHINOwIM-UW0bg8BPY6wWW07M9-jvX_Jm8lKAeCBrp0fDQe7su2vTl0Dcsgxw1OQVJG1eFw' \
 --header 'Authorization: Basic NURvT0daQUdBX2xBR2dIMHZaQlJFODNOX2xBYTpaZjl5U3pCUzRPZ3M0eWtuMWJaZmxVZkExTXNh' \
 --data-urlencode 'grant_type=refresh_token' \
 --data-urlencode 'refresh_token=a8dcd0c4-7272-3901-ade2-d24cb8bae241'
 ```
 
-3. Access Protected Resource :
+#### 5. Access Protected Resource :
 
 ```
 curl --location --request GET 'https://localhost:9443/scim2/Users' \
 --header 'accept: application/scim+json' \
---header 'DPoP: eyJ0eXAiOiJkcG9wK2p3dCIsImFsZyI6IkVTMjU2IiwiandrIjp7Imt0eSI6IkVDIiwiY3J2IjoiUC0yNTYiLCJ4IjoibkNmX3lscldjMTVtejVJZWxSQmJ2TGhLbFV1em4zd1dDSW9ReHVOUThlVSIsInkiOiJhMmU3OTU3S2c3aTVxTUE5UHVpandmSE9nMk95QlRsZ0pVaEhzWGtNaGZnIn19.eyJodG0iOiJHRVQiLCJzdWIiOiJzdWIiLCJuYmYiOjE2NTI3Njg4MzEsImlzcyI6Imlzc3VlciIsImh0dSI6Imh0dHBzOlwvXC9sb2NhbGhvc3Q6OTQ0M1wvc2NpbTJcL1VzZXJzIiwiaWF0IjoxNjUyNzY4ODMxLCJqdGkiOiJlYjExOWZhYS02OGM2LTQ2ZGYtYTE2Ny1iZDAwNTJhYzRhYWEifQ.h5oujqZugEANfOnEWM23z6AGpcckic4fphkcjGqrizy9_K7pybYtadGBxYlrU81d0bP5LKbkZCKXWtdvYXLqXg' \
+--header 'DPoP: eyJ0eXAiOiJkcG9wK2p3dCIsImFsZyI6IkVTMjU2IiwiandrIjp7Imt0eSI6IkVDIiwiY3J2IjoiUC0yNTYiLCJ4IjoiLTZGNGlydjc2andTaUxIZWJWemtzTGZqdFhZcGxTOVJ3bXZKRmRScC1yYyIsInkiOiJHYlZDRzBDM0xIQjlVbzdDSW9KZUIydk5BaHRlR05EcUh3VmNNRXV5QUkwIn19.eyJodG0iOiJHRVQiLCJzdWIiOiJzdWIiLCJuYmYiOjE3MTU2Njc2NjksImF0aCI6IlBsNmYyb3VjZmN0Z0NmS2syWThGeWVwOXBjMmQ1aHNXZmJPQnVtcjZnWHciLCJpc3MiOiJpc3N1ZXIiLCJodHUiOiJodHRwczpcL1wvbG9jYWxob3N0Ojk0NDNcL3NjaW0yXC9Vc2VycyIsImlhdCI6MTcxNTY2NzY2OSwianRpIjoiMmMwYjc3MTUtZWE3Zi00M2U5LWE5ZWUtZGY2YzM0NTBhM2Q1In0.dtrKwkP3qp5DvzOwxWQJFSrKx7Jd3UnIywY2wXqCe1tErPbdECEBxApgVng8vBUUIqTy7jfw3kKeoTUtXLwGpg' \
 --header 'Authorization: DPoP 1ce0fc0a-c830-307a-aafc-d25fdc4063ee'
 ```
 &emsp;&ensp;Here, **Authorization Header Value = DPoP {access-token}**
 
-4. Revoke Token :
+It is important to note that when accessing protected resources, the DPoP proof JWT **MUST** contain the additional 
+`ath` claim. Refer [DPoP Proof JWT Syntax](https://datatracker.ietf.org/doc/html/rfc9449#name-dpop-proof-jwt-syntax) for more 
+details.
+
+#### 6. Revoke Token :
 
 ```
 curl --location --request POST 'https://localhost:9443/oauth2/revoke' \
