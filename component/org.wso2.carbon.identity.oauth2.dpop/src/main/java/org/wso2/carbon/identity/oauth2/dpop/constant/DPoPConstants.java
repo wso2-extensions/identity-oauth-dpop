@@ -25,6 +25,7 @@ public class DPoPConstants {
 
     public static final String VALIDITY_PERIOD = "header_validity_period";
     public static final int DEFAULT_HEADER_VALIDITY = 60000;
+    public static final String DPOP_EVENT_HANDLER_NAME = "dpopEventHandler";
     public static final String DPOP_ISSUED_AT = "iat";
     public static final String DPOP_HTTP_URI = "htu";
     public static final String DPOP_HTTP_METHOD = "htm";
@@ -39,6 +40,7 @@ public class DPoPConstants {
     public static final String ECDSA_ENCRYPTION = "EC";
     public static final String RSA_ENCRYPTION = "RSA";
     public static final String HTTP_METHOD = "httpMethod";
+    public static final String HTTP_POST = "POST";
     public static final String HTTP_URL = "httpUrl";
     public static final String JTI = "jti";
     public static final String OAUTH_DPOP_HEADER = "DPoP";

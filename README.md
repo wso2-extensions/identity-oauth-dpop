@@ -39,7 +39,7 @@ properties.skip_dpop_validation_in_revoke = "true"
 
 [[event_handler]]
 name= "dpopEventHandler"
-subscriptions =["POST_ISSUE_CODE"]
+subscriptions =["POST_ISSUE_CODE","PRE_HANDLE_PAR_REQUEST"]
 
 [[oauth.custom_token_validator]]
 type = "dpop"
