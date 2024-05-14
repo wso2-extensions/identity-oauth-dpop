@@ -228,12 +228,6 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>com.h2database</groupId>
-                <artifactId>h2</artifactId>
-                <version>${h2database.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
                 <groupId>org.wso2.carbon.identity.framework</groupId>
                 <artifactId>org.wso2.carbon.identity.testutil</artifactId>
                 <version>${carbon.identity.version}</version>
@@ -470,7 +464,6 @@
         <powermock.version>2.0.9</powermock.version>
         <maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version>
         <javaee.web.api.version>7.0</javaee.web.api.version>
-        <h2database.version>2.1.210</h2database.version>
         <org.wso2.carbon.identity.testutil.version>5.11.9</org.wso2.carbon.identity.testutil.version>
         <maven.plugins.version>2.0</maven.plugins.version>
         <maven.resource.plugin.version>3.0.2</maven.resource.plugin.version>
