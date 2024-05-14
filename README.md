@@ -64,7 +64,7 @@ class = "org.wso2.carbon.identity.oauth2.dpop.validators.DPoPTokenValidator"
 7. In the application configurations page, navigate to the `Protocol` tab.
 8. Scroll down to the `Token binding type` section & select `DPoP` from the options.
 
-![img_1.png](img_1.png)
+![Screenshot from 2024-05-10 15-44-50](https://github.com/wso2-extensions/identity-oauth-dpop/assets/110591829/3ea21c9f-2a88-429a-a463-b3c3f451981f)
 
 ### Sample Usage Instructions
 
