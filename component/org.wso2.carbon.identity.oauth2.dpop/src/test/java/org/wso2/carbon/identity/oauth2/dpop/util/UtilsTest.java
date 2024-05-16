@@ -21,13 +21,12 @@ package org.wso2.carbon.identity.oauth2.dpop.util;
 import com.nimbusds.jose.Requirement;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.KeyType;
-import com.nimbusds.jwt.SignedJWT;
 import org.apache.commons.lang.StringUtils;
 import org.mockito.Mock;
+import org.mockito.MockedConstruction;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.testng.PowerMockTestCase;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -40,25 +39,20 @@ import java.util.Date;
 
 import javax.sql.DataSource;
 
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.spy;
-import static org.powermock.api.mockito.PowerMockito.when;
-import static org.powermock.api.mockito.PowerMockito.whenNew;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.wso2.carbon.identity.oauth2.dpop.util.DPoPTestConstants.DUMMY_DPOP_PROOF;
 import static org.wso2.carbon.identity.oauth2.dpop.util.DPoPTestConstants.DUMMY_HTTP_METHOD;
 import static org.wso2.carbon.identity.oauth2.dpop.util.DPoPTestConstants.DUMMY_HTTP_URL;
 import static org.wso2.carbon.identity.oauth2.dpop.util.DPoPTestConstants.DUMMY_JTI;
 
-@PrepareForTest ({IdentityDatabaseUtil.class, Utils.class, JWK.class})
-@PowerMockIgnore({"org.mockito.*", "jdk.internal.reflect.*"})
-public class UtilsTest extends PowerMockTestCase {
+public class UtilsTest {
 
     @Mock
     DataSource mockDataSource;
-
-    @Mock
-    JdbcTemplate mockJdbcTemplate;
 
     @Mock
     JWK mockJWK;
@@ -70,12 +64,14 @@ public class UtilsTest extends PowerMockTestCase {
     }
 
     @Test
-    public void testGetNewTemplate() throws Exception {
-
-        mockStatic(IdentityDatabaseUtil.class);
-        when(IdentityDatabaseUtil.getDataSource()).thenReturn(mockDataSource);
-        whenNew(JdbcTemplate.class).withAnyArguments().thenReturn(mockJdbcTemplate);
-        assertEquals(Utils.getNewTemplate(), mockJdbcTemplate);
+    public void testGetNewTemplate() {
+        try (MockedStatic<IdentityDatabaseUtil> mockedIdentityDatabaseUtil = mockStatic(IdentityDatabaseUtil.class)) {
+            mockedIdentityDatabaseUtil.when(IdentityDatabaseUtil::getDataSource).thenReturn(mockDataSource);
+            try (MockedConstruction<JdbcTemplate> mockJdbcTemplate = Mockito.mockConstruction(JdbcTemplate.class,
+                    (mock, context) -> { })) {
+                assertEquals(Utils.getNewTemplate(), mockJdbcTemplate.constructed().get(0));
+            }
+        }
     }
 
     @DataProvider(name = "dpopProofProvider")
@@ -105,12 +101,11 @@ public class UtilsTest extends PowerMockTestCase {
     @Test
     public void testGetThumbprintOfKeyFromDpopProofWithInvalidJWK() throws Exception {
 
-        String dPoPProof = DPoPProofUtil.genarateDPoPProof();
-        String jwk = SignedJWT.parse(dPoPProof).getHeader().getJWK().toString();
-
-        spy(JWK.class);
-        when(JWK.parse(jwk)).thenReturn(mockJWK);
-        when(mockJWK.getKeyType()).thenReturn(new KeyType("some_type", Requirement.REQUIRED));
-        assertEquals(Utils.getThumbprintOfKeyFromDpopProof(dPoPProof), StringUtils.EMPTY);
+        try (MockedStatic<JWK> mockedJWK = mockStatic(JWK.class, CALLS_REAL_METHODS)) {
+            mockedJWK.when(() -> JWK.parse(anyString())).thenReturn(mockJWK);
+            when(mockJWK.getKeyType()).thenReturn(new KeyType("some_type", Requirement.REQUIRED));
+            String dPoPProof = DPoPProofUtil.genarateDPoPProof();
+            assertEquals(Utils.getThumbprintOfKeyFromDpopProof(dPoPProof), StringUtils.EMPTY);
+        }
     }
 }
