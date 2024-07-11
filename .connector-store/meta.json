@@ -1,0 +1,24 @@
+{
+    "name": "Private Key JWT Client Authenticator",
+    "owner": "WSO2",
+    "category": "OAuth Client",
+    "documentationUrl": "https://is.docs.wso2.com/en/6.0.0/guides/access-delegation/private-key-jwt-client-authentication-for-oidc/",
+    "description": "This is one of the Client Authentication methods that can be used by Clients to authenticate to the Authorization Server when using the Token Endpoint.",
+    "status": "Active",
+    "labels": [],
+    "releases": [
+        {
+            "tagName": "v2.2.8 ",
+            "products": [
+                "IS 6.0.0",
+                "IS 5.10.0"
+            ]
+        },
+        {
+            "tagName": "v1.0.9 ",
+            "products": [
+                "IS 5.7.0"
+            ]
+        }
+    ]
+}
