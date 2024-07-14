@@ -19,6 +19,7 @@
 package org.wso2.carbon.identity.oauth2.token.handler.clientauth.jwt;
 
 import org.mockito.Mockito;
+import org.powermock.reflect.internal.WhiteboxImpl;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -44,7 +45,6 @@ import org.wso2.carbon.idp.mgt.internal.IdpMgtServiceComponentHolder;
 import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.core.service.RealmService;
 
-import java.lang.reflect.Field;
 import java.security.Key;
 import java.security.KeyStore;
 import java.util.ArrayList;
@@ -96,11 +96,13 @@ public class PrivateKeyJWTClientAuthenticatorTest {
 
         Map<String, List> bodyContent = new HashMap<>();
         List<String> assertion = new ArrayList<>();
-        assertion.add(buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3000", audience, "RSA265", key1, 0));
+        assertion.add(buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3000", audience, "RSA265", key1,
+                0));
         bodyContent.put(OAUTH_JWT_ASSERTION, assertion);
         String clientId = privateKeyJWTClientAuthenticator.getClientId(httpServletRequest, bodyContent,
                 oAuthClientAuthnContext);
-        assertEquals(clientId, "KrVLov4Bl3natUksF2HmWsdw684a", "The expected client id is the jwt subject.");
+        assertEquals(clientId, "KrVLov4Bl3natUksF2HmWsdw684a", "The expected client id is the jwt " +
+                "subject.");
 
     }
 
@@ -110,7 +112,8 @@ public class PrivateKeyJWTClientAuthenticatorTest {
         Map<String, List> bodyContent = new HashMap<>();
         List<String> assertion = new ArrayList<>();
         List<String> assertionType = new ArrayList<>();
-        assertion.add(buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3000", audience, "RSA265", key1, 0));
+        assertion.add(buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3000", audience, "RSA265", key1,
+                0));
         assertionType.add(OAUTH_JWT_BEARER_GRANT_TYPE);
         bodyContent.put(OAUTH_JWT_ASSERTION, assertion);
 
@@ -127,7 +130,8 @@ public class PrivateKeyJWTClientAuthenticatorTest {
         List<String> assertionType = new ArrayList<>();
         assertionType.add(OAUTH_JWT_BEARER_GRANT_TYPE);
         List<String> assertion = new ArrayList<>();
-        assertion.add(buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3000", audience, "RSA265", key1, 0));
+        assertion.add(buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3000", audience, "RSA265", key1,
+                0));
         bodyContent.put(OAUTH_JWT_ASSERTION, assertion);
         bodyContent.put(OAUTH_JWT_ASSERTION_TYPE, assertionType);
         RealmService realmService = IdentityTenantUtil.getRealmService();
@@ -137,7 +141,7 @@ public class PrivateKeyJWTClientAuthenticatorTest {
         IdpMgtServiceComponentHolder.getInstance().setRealmService(realmService);
         Map<String, Object> configuration = new HashMap<>();
         configuration.put("OAuth.OpenIDConnect.IDTokenIssuerID", "http://localhost:9443/oauth2/token");
-        setPrivateStaticField(IdentityUtil.class, "configuration", configuration);
+        WhiteboxImpl.setInternalState(IdentityUtil.class, "configuration", configuration);
         JWTClientAuthenticatorConfig jwtClientAuthenticatorConfig = new JWTClientAuthenticatorConfig();
         jwtClientAuthenticatorConfig.setEnableTokenReuse(true);
         JWTAuthenticationConfigurationDAO mockDAO = Mockito.mock(JWTAuthenticationConfigurationDAO
@@ -170,13 +174,5 @@ public class PrivateKeyJWTClientAuthenticatorTest {
         }
         Assert.assertTrue(supportedAuthMethods.contains("private_key_jwt"));
         assertEquals(supportedAuthMethods.size(), 1);
-    }
-
-    private void setPrivateStaticField(Class<?> clazz, String fieldName, Object newValue)
-            throws NoSuchFieldException, IllegalAccessException {
-
-        Field field = clazz.getDeclaredField(fieldName);
-        field.setAccessible(true);
-        field.set(null, newValue);
     }
 }

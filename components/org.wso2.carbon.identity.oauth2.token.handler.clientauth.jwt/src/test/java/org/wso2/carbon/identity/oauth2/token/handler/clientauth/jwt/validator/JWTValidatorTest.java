@@ -21,6 +21,7 @@ package org.wso2.carbon.identity.oauth2.token.handler.clientauth.jwt.validator;
 import com.nimbusds.jwt.SignedJWT;
 import org.apache.commons.codec.binary.Base64;
 import org.mockito.Mockito;
+import org.powermock.reflect.internal.WhiteboxImpl;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -47,7 +48,6 @@ import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.core.service.RealmService;
 
 import java.io.ByteArrayInputStream;
-import java.lang.reflect.Field;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
@@ -60,8 +60,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Matchers.anyString;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.wso2.carbon.identity.oauth2.token.handler.clientauth.jwt.Constants.REJECT_BEFORE_IN_MINUTES;
@@ -119,7 +118,6 @@ public class JWTValidatorTest {
     @BeforeClass
     public void setUp() throws Exception {
 
-        mockStatic(PrivilegedCarbonContext.class);
         Map<Integer, Certificate> publicCerts = new ConcurrentHashMap<>();
         publicCerts.put(SUPER_TENANT_ID, ReadCertStoreSampleUtil.createKeyStore(getClass())
                 .getCertificate("wso2carbon"));
@@ -131,7 +129,7 @@ public class JWTValidatorTest {
         KeyStoreManager keyStoreManager = Mockito.mock(KeyStoreManager.class);
         ConcurrentHashMap<String, KeyStoreManager> mtKeyStoreManagers = new ConcurrentHashMap();
         mtKeyStoreManagers.put(String.valueOf(SUPER_TENANT_ID), keyStoreManager);
-        setPrivateStaticField(KeyStoreManager.class, "mtKeyStoreManagers", mtKeyStoreManagers);
+        WhiteboxImpl.setInternalState(KeyStoreManager.class, "mtKeyStoreManagers", mtKeyStoreManagers);
         cert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(
                 new ByteArrayInputStream(Base64.decodeBase64(CERTIFICATE)));
         Mockito.when(keyStoreManager.getDefaultPrimaryCertificate()).thenReturn(cert);
@@ -151,7 +149,7 @@ public class JWTValidatorTest {
         configuration.put("OAuth.OpenIDConnect.FAPI.AllowedSignatureAlgorithms.AllowedSignatureAlgorithm",
                 Arrays.asList("PS256", "ES256", "RS512"));
         configuration.put("OAuth.MutualTLSAliases.Enabled", "false");
-        setPrivateStaticField(IdentityUtil.class, "configuration", configuration);
+        WhiteboxImpl.setInternalState(IdentityUtil.class, "configuration", configuration);
     }
 
     @DataProvider(name = "provideJWT")
@@ -181,27 +179,40 @@ public class JWTValidatorTest {
 
         Key key1 = clientKeyStore.getKey("wso2carbon", "wso2carbon".toCharArray());
         String audience = ID_TOKEN_ISSUER_ID;
-        String jsonWebToken0 = buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3000", audience, "RSA265", key1, 0);
-        String jsonWebToken1 = buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3001", audience, "RSA265", key1, 0);
-        String jsonWebToken2 = buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3002", audience, "RSA265", key1,
+        String jsonWebToken0 = buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3000", audience, "RSA265",
+                key1, 0);
+        String jsonWebToken1 = buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3001", audience, "RSA265",
+                key1, 0);
+        String jsonWebToken2 = buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3002", audience, "RSA265",
+                key1,
                 6000000);
-        String jsonWebToken3 = buildJWT("some-issuer", TEST_CLIENT_ID_1, "3003", audience, "RSA265", key1,
+        String jsonWebToken3 = buildJWT("some-issuer", TEST_CLIENT_ID_1, "3003", audience, "RSA265",
+                key1,
                 6000000);
-        String jsonWebToken4 = buildJWT(TEST_CLIENT_ID_1, "some-client-id", "3004", audience, "RSA265", key1, 0);
-        String jsonWebToken5 = buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3005", audience, "RSA265", key1, 0);
-        String jsonWebToken6 = buildJWT(VALID_ISSUER_VAL, TEST_CLIENT_ID_1, "3006", audience, "RSA265", key1, 0);
-        String jsonWebToken7 = buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3006", audience, "RSA265", key1, 0);
-        String jsonWebToken9 = buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3009", audience, "RSA265", key1,
+        String jsonWebToken4 = buildJWT(TEST_CLIENT_ID_1, "some-client-id", "3004", audience,
+                "RSA265", key1, 0);
+        String jsonWebToken5 = buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3005", audience, "RSA265",
+                key1, 0);
+        String jsonWebToken6 = buildJWT(VALID_ISSUER_VAL, TEST_CLIENT_ID_1, "3006", audience, "RSA265",
+                key1, 0);
+        String jsonWebToken7 = buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3006", audience, "RSA265",
+                key1, 0);
+        String jsonWebToken9 = buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3009", audience, "RSA265",
+                key1,
                 Calendar.getInstance().getTimeInMillis());
         String jsonWebToken10 = buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3010", SOME_VALID_AUDIENCE,
                 "RSA265", key1, 0);
-        String jsonWebToken11 = buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3011", audience, "RSA265", key1,
+        String jsonWebToken11 = buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3011", audience, "RSA265",
+                key1,
                 0, 0, Calendar.getInstance().getTimeInMillis() - (1000L * 60 * 2 *
                         Constants.DEFAULT_VALIDITY_PERIOD_IN_MINUTES));
 
-        String jsonWebToken12 = buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3012", audience, "RSA265", key1, 0);
-        String jsonWebToken13 = buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3012", audience, "RSA265", key1, 0);
-        String jsonWebToken15 = buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3015", audience, "RSA265", key1,
+        String jsonWebToken12 = buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3012", audience, "RSA265",
+                key1, 0);
+        String jsonWebToken13 = buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3012", audience, "RSA265",
+                key1, 0);
+        String jsonWebToken15 = buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3015", audience, "RSA265",
+                key1,
                 600000000);
 
         String jsonWebToken16 = buildJWT(TEST_CLIENT_ID_1, TEST_CLIENT_ID_1, "3016", "some_audience",
@@ -304,13 +315,5 @@ public class JWTValidatorTest {
                 "JWTG92NEJsM25hdFVrc0YySG1Xc2R3Njg0YSIsImp0aSI6MTAwOCwiZXhwIjoiMjU1NDQ0MDEzMjAwMCIsImF1ZCI6Wy" +
                 "Jzb21lLWF1ZGllbmNlIl19.m0RrVUrZHr1M7R4I_4dzpoWD8jNA2fKkOadEsFg9Wj4";
         SignedJWT signedJWT = SignedJWT.parse(hsSignedJWT);
-    }
-
-    private void setPrivateStaticField(Class<?> clazz, String fieldName, Object newValue)
-            throws NoSuchFieldException, IllegalAccessException {
-
-        Field field = clazz.getDeclaredField(fieldName);
-        field.setAccessible(true);
-        field.set(null, newValue);
     }
 }

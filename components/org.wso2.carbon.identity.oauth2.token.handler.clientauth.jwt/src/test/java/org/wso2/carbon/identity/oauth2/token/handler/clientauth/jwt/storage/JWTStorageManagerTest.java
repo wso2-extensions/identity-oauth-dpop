@@ -19,12 +19,15 @@
 package org.wso2.carbon.identity.oauth2.token.handler.clientauth.jwt.storage;
 
 import org.mockito.Mockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.testng.PowerMockTestCase;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
 import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
+import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.core.util.JdbcUtils;
 import org.wso2.carbon.identity.oauth2.client.authentication.OAuthClientAuthnException;
 import org.wso2.carbon.identity.oauth2.token.handler.clientauth.jwt.Constants;
@@ -36,8 +39,8 @@ import org.wso2.carbon.identity.oauth2.token.handler.clientauth.jwt.util.JWTTest
 import java.sql.Connection;
 import java.util.List;
 
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
+import static org.powermock.api.mockito.PowerMockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
@@ -46,8 +49,8 @@ import static org.wso2.carbon.identity.oauth2.token.handler.clientauth.jwt.util.
 import static org.wso2.carbon.identity.oauth2.token.handler.clientauth.jwt.util.JWTTestUtil.spyConnection;
 import static org.wso2.carbon.identity.oauth2.token.handler.clientauth.jwt.util.Util.checkIfTenantIdColumnIsAvailableInIdnOidcAuthTable;
 
-
-public class JWTStorageManagerTest {
+@PrepareForTest({IdentityUtil.class, JdbcUtils.class, IdentityDatabaseUtil.class, FrameworkUtils.class})
+public class JWTStorageManagerTest extends PowerMockTestCase {
 
     private JWTStorageManager jwtStorageManager;
     private Connection spyConnection;
@@ -63,6 +66,7 @@ public class JWTStorageManagerTest {
     @BeforeMethod
     public void init() throws Exception {
 
+        mockStatic(IdentityDatabaseUtil.class);
         spyConnection = spyConnection(JWTTestUtil.getConnection());
         Mockito.when(IdentityDatabaseUtil.getDBConnection()).thenReturn(spyConnection);
         mockStatic(JdbcUtils.class);
@@ -121,11 +125,13 @@ public class JWTStorageManagerTest {
         when(JdbcUtils.isH2DB()).thenReturn(true);
         when(JdbcUtils.isOracleDB()).thenReturn(false);
         // Insert a JTI entry with Expired Date.
-        jwtStorageManager.persistJWTIdInDB("2023", 12, 10000000, 10000000, false);
+        jwtStorageManager.persistJWTIdInDB("2023", 12, 10000000, 10000000,
+                false);
         when(JdbcUtils.isH2DB()).thenReturn(true);
         when(JdbcUtils.isOracleDB()).thenReturn(false);
         // Update a JTI entry again.
-        jwtStorageManager.persistJWTIdInDB("2023", 12, 10001000, 10000100, false);
+        jwtStorageManager.persistJWTIdInDB("2023", 12, 10001000, 10000100,
+                false);
     }
 
     @Test(dependsOnMethods = {"testPersistJWTIdInDBWithoutTokenReuse"})
