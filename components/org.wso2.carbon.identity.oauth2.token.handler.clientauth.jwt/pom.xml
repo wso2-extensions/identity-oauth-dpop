@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.wso2.carbon.extension.identity.oauth.privatekey.jwthandler</groupId>
         <artifactId>identity-oauth-privatekey-jwthandler</artifactId>
-        <version>2.5.14-SNAPSHOT</version>
+        <version>2.5.14</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -144,8 +144,13 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-api-mockito</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-module-testng</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -237,11 +242,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven.surefire.plugin.version}</version>
                 <configuration>
-                    <argLine>
-                        --add-opens java.base/java.util=ALL-UNNAMED
-                        --add-opens java.base/java.lang=ALL-UNNAMED
-                        --add-opens java.base/java.lang.reflect=ALL-UNNAMED
-                    </argLine>
+                    <!--<argLine>-Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=512m -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5006</argLine>-->
                     <suiteXmlFiles>
                         <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
                     </suiteXmlFiles>
@@ -249,10 +250,6 @@
                         <jacoco-agent.destfile>target/jacoco.exec</jacoco-agent.destfile>
                     </systemPropertyVariables>
                     <reuseForks>true</reuseForks>
-                    <classpathDependencyExcludes>
-                        <classpathDependencyExclude>org.ops4j.pax.logging</classpathDependencyExclude>
-                        <classpathDependencyExclude>org.wso2.org.ops4j.pax.logging</classpathDependencyExclude>
-                    </classpathDependencyExcludes>
                 </configuration>
             </plugin>
         </plugins>
