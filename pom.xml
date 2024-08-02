@@ -26,8 +26,8 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.wso2.carbon.extension.identity.oauth.privatekey.jwthandler</groupId>
-    <artifactId>identity-oauth-privatekey-jwthandler</artifactId>
+    <groupId>org.wso2.carbon.extension.identity.oauth.addons</groupId>
+    <artifactId>identity-oauth2-extenstions</artifactId>
     <version>2.5.16-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Identity OAuth PrivateKey JWT Handler</name>
