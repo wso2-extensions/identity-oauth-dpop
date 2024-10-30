@@ -65,6 +65,10 @@ class = "org.wso2.carbon.identity.oauth2.dpop.validators.DPoPTokenValidator"
 8. Scroll down to the `Token binding type` section & select `DPoP` from the options.
 
 ![Screenshot from 2024-05-10 15-44-50](https://github.com/wso2-extensions/identity-oauth-dpop/assets/110591829/3ea21c9f-2a88-429a-a463-b3c3f451981f)
+9. Enable `Validate token bindings` option to validate the binding during authorization.
+
+<img width="824" alt="image" src="https://github.com/user-attachments/assets/2d173f66-e610-43a9-8bc8-9836fb768e52">
+
 
 ### Sample Usage Instructions
 
