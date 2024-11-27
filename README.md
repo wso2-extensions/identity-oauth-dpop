@@ -1,76 +1,163 @@
-# DPoP component
+In traditional OAuth 2.0 flows, presenting a valid Bearer token is sufficient to gain access to a protected resource. 
+However, this approach has a significant drawback: if a Bearer token falls into the hands of an unauthorized actor, 
+they can impersonate the user and gain unauthorized access to protected resources. The resource server, lacking a way 
+to verify the legitimacy of the sender, will grant access to anyone presenting a valid token. 
+This vulnerability highlights the need for a more secure solution, such as sender-constrained tokens.
 
-In traditional OAuth2 flows, presenting a valid Bearer token is proof enough to gain access to a protected resource. 
-That means if a Bearer token gets into the hands of an unauthorized actor, they can impersonate the user and get 
-unauthorized access to the protected resources. The resource server cannot validate the legitimacy of the sender and 
-will grant access to whoever bears a valid token.A solution to this problem is to use sender-constrained tokens.
+[Demonstrating Proof of Possession (DPoP)](https://datatracker.ietf.org/doc/html/rfc9449) is an application-level mechanism designed to sender-constrain OAuth access 
+and refresh tokens. It enables a client to prove ownership of a public/private key pair by including a DPoP header 
+in HTTP requests. This header contains a JSON Web Token (JWT) that binds the issued tokens to the public part of the client’s key pair.
 
-Demonstrating Proof of Possession (DPoP) is an application-level mechanism for sender-constraining OAuth access and 
-refresh tokens. It enables a client to prove the possession of a public/private key pair by including a DPoP header in 
-an HTTP request. The value of the header is a JSON Web Token (JWT) that enables the authorization server to bind issued 
-tokens to the public part of a client's key pair. Recipients of such tokens are then able to verify the binding of the 
-token to the key pair that the client has demonstrated that it holds via the DPoP header, thereby providing some 
-assurance that the client presenting the token also possesses the private key. In other words, the legitimate presenter 
-of the token is constrained to be the sender that holds and proves possession of the private part of the key pair.
+By using DPoP, the authorization server ensures that tokens are bound to the key pair associated with the client. 
+Recipients of such tokens can verify the binding, ensuring that the client presenting the token also possesses 
+the corresponding private key. This mechanism provides strong assurance that the legitimate presenter of the token 
+is the same sender who holds and demonstrates possession of the private key.
 
-## Specification 
-https://datatracker.ietf.org/doc/html/rfc9449
+# Deployment Instructions
 
-## Design 
+## Step 1: Build the Project
+Run the following command to build the project:
 
-### Sequence Diagrams.
-#### 1. DPoP bound authorization code request
-![AuthzCodeBinding](https://github.com/wso2-extensions/identity-oauth-dpop/assets/110591829/807e5904-e230-458e-b7ba-4db48c829833)
+```bash
+mvn clean install
+```
 
-#### 2. DPoP bound push authorization request
-![Blank diagram - Page 2](https://github.com/wso2-extensions/identity-oauth-dpop/assets/110591829/cc696840-de86-4d9b-88dd-5e6d7f3bb12c)
+## Step 2: Add the JAR File
+Copy the `org.wso2.carbon.identity.oauth2.dpop-1.X.X-SNAPSHOT.jar` file to the following directory:
 
-#### 3. DPoP token request
-![Screenshot from 2021-10-25 23-06-12](https://user-images.githubusercontent.com/26603378/138743329-5cc54271-08a6-44ec-938e-d675bdd24717.png)
+```
+<IS_HOME>/repository/components/dropins
+```
 
-#### 4. Invoking protected APIs with DPoP token and DPoP proof.
-![Invoke API(2)](https://user-images.githubusercontent.com/26603378/138742776-3d2c2714-c87e-4f77-9dce-24fde3df600e.jpeg)
+## Step 3: Update the Deployment Configuration
+Add the following configuration to the `<IS_HOME>/repository/conf/deployment.toml` file:
 
-### Sample client application to create dpop proof
-PR : [wso2 /samples-is#302 ](https://github.com/wso2/samples-is/pull/302 )
-
-### Deployment Instructions
-
-1. Build the project using mvn clean install.
-2. Add the org.wso2.carbon.identity.oauth2.dpop-1.X.X-SNAPSHOT.jar JAR into the <IS_HOME>/repository/components/dropins folder.
-3. Add the below configuration to <IS_HOME>/repository/conf/deployment.toml file.
-
- ```
+```toml
 [[event_listener]]
 id = "dpop_listener"
 type = "org.wso2.carbon.identity.core.handler.AbstractIdentityHandler"
-name="org.wso2.carbon.identity.oauth2.dpop.listener.OauthDPoPInterceptorHandlerProxy"
+name = "org.wso2.carbon.identity.oauth2.dpop.listener.OauthDPoPInterceptorHandlerProxy"
 order = 13
 enable = true
-properties.header_validity_period = 90
+properties.header_validity_period = 3000
 properties.skip_dpop_validation_in_revoke = "true"
 
 [[event_handler]]
-name= "dpopEventHandler"
-subscriptions =["POST_ISSUE_CODE","PRE_HANDLE_PAR_REQUEST"]
+name = "dpopEventHandler"
+subscriptions = ["POST_ISSUE_CODE", "PRE_HANDLE_PAR_REQUEST"]
 
 [[oauth.custom_token_validator]]
 type = "dpop"
 class = "org.wso2.carbon.identity.oauth2.dpop.validators.DPoPTokenValidator"
 ```
-4. Restart the Identity Server.
-5. Sign in to the Management Console.
-6. Navigate to the `Applications` section & select the application you want to configure DPoP.
-7. In the application configurations page, navigate to the `Protocol` tab.
-8. Scroll down to the `Token binding type` section & select `DPoP` from the options.
 
+## Step 4: Restart the Identity Server
+Restart the WSO2 Identity Server to apply the changes.
+
+## Step 5: Access the Management Console
+Log in to the Console.
+
+## Step 6: Navigate to the Applications Section
+1. Go to the **Applications** section.
+2. Select the application you want to configure for DPoP.
+
+## Step 7: Configure DPoP for the Application
+1. In the application configuration page, open the **Protocol** tab.
+2. Scroll down to the **Token Binding Type** section.
+3. Select **DPoP** from the available options.
 ![Screenshot from 2024-05-10 15-44-50](https://github.com/wso2-extensions/identity-oauth-dpop/assets/110591829/3ea21c9f-2a88-429a-a463-b3c3f451981f)
-9. Enable `Validate token bindings` option to validate the binding during authorization.
+4. Enable `Validate token bindings` option to validate the binding during authorization.
 
 <img width="824" alt="image" src="https://github.com/user-attachments/assets/2d173f66-e610-43a9-8bc8-9836fb768e52">
 
+# Applying DPoP Database Tables
 
-### Sample Usage Instructions
+This guide provides instructions for applying the necessary database queries to set up DPoP with the Authorization Code Grant. 
+The queries are specific to different database systems and should be executed accordingly.
+
+## Step 1: Identify Your Database
+Determine the database type used in your WSO2 Identity Server setup. The supported database types include:
+- H2 (default database)
+- DB2
+- MySQL
+- PostgreSQL
+- Oracle
+- Microsoft SQL Server
+
+## Step 2: Apply the Database Queries
+Use the queries from the respective files linked in the PR to create the required tables for DPoP functionality. Below are the steps for each database type:
+
+### H2 (Default Database)
+Run the following query in your H2 database:
+```sql
+CREATE TABLE IF NOT EXISTS IDN_OAUTH2_DPOP_JKT (
+            CODE_ID   VARCHAR(255),
+            DPOP_JKT  VARCHAR(255),
+            PRIMARY KEY (CODE_ID),
+            FOREIGN KEY (CODE_ID) REFERENCES IDN_OAUTH2_AUTHORIZATION_CODE(CODE_ID) ON DELETE CASCADE
+);
+```
+
+### DB2
+Run the following query in your DB2 database:
+```sql
+CREATE TABLE IDN_OAUTH2_DPOP_JKT (
+            CODE_ID VARCHAR(255) NOT NULL,
+            DPOP_JKT VARCHAR(255),
+            PRIMARY KEY (CODE_ID),
+            FOREIGN KEY (CODE_ID) REFERENCES IDN_OAUTH2_AUTHORIZATION_CODE (CODE_ID) ON DELETE CASCADE)
+```
+
+### MySQL
+Run the following query in your MySQL database:
+```sql
+CREATE TABLE IF NOT EXISTS IDN_OAUTH2_DPOP_JKT (
+            CODE_ID VARCHAR(255),
+            DPOP_JKT VARCHAR(255),
+            PRIMARY KEY (CODE_ID),
+            FOREIGN KEY (CODE_ID) REFERENCES IDN_OAUTH2_AUTHORIZATION_CODE (CODE_ID) ON DELETE CASCADE
+)DEFAULT CHARACTER SET latin1 ENGINE INNODB;
+```
+
+### PostgreSQL
+Run the following query in your PostgreSQL database:
+```sql
+DROP TABLE IF EXISTS IDN_OAUTH2_DPOP_JKT;
+CREATE TABLE IF NOT EXISTS IDN_OAUTH2_DPOP_JKT (
+            CODE_ID VARCHAR(255),
+            DPOP_JKT VARCHAR(255),
+            PRIMARY KEY (CODE_ID),
+            FOREIGN KEY (CODE_ID) REFERENCES IDN_OAUTH2_AUTHORIZATION_CODE(CODE_ID) ON DELETE CASCADE
+);
+```
+
+### Oracle
+Run the following query in your Oracle database:
+```sql
+CREATE TABLE IDN_OAUTH2_DPOP_JKT (
+    CODE_ID VARCHAR(255),
+    DPOP_JKT VARCHAR2(255),
+    PRIMARY KEY (CODE_ID),
+    FOREIGN KEY (CODE_ID) REFERENCES IDN_OAUTH2_AUTHORIZATION_CODE(CODE_ID) ON DELETE CASCADE)
+```
+
+### Microsoft SQL Server
+Run the following query in your Microsoft SQL Server database:
+```sql
+IF NOT  EXISTS (SELECT * FROM SYS.OBJECTS WHERE OBJECT_ID = OBJECT_ID(N'[DBO].[IDN_OAUTH2_DPOP_JKT]') AND TYPE IN (N'U'))
+CREATE TABLE IDN_OAUTH2_DPOP_JKT (
+    CODE_ID VARCHAR(255),
+    DPOP_JKT VARCHAR(255),
+    PRIMARY KEY (CODE_ID),
+    FOREIGN KEY (CODE_ID) REFERENCES IDN_OAUTH2_AUTHORIZATION_CODE(CODE_ID) ON DELETE CASCADE
+);
+```
+
+
+## Step 3: Verify the Table Creation
+After executing the query, verify that the table `IDN_OAUTH2_DPOP` has been created successfully in your database.
+
+# Sample Usage Instructions
 
 #### 1. DPoP bound Authorization Code Request :
 
@@ -86,6 +173,9 @@ This binding will enable end-to-end binding of the entire authorization flow.
 
 Including this parameter in authorization request is **OPTIONAL** .If not included, the authorization code will not be 
 bound to the client's proof-of-possession key. 
+
+![AuthzCodeBinding](https://github.com/wso2-extensions/identity-oauth-dpop/assets/110591829/807e5904-e230-458e-b7ba-4db48c829833)
+
 
 #### 2. DPoP bound Push Authorization Request :
 
@@ -113,6 +203,9 @@ dpop_jkt does not match the public key in the DPoP header.
 Similar to the authorization code request, including the `dpop_jkt` parameter or DPoP header in the PAR request is 
 **OPTIONAL**. If not included, the authorization code will not be bound to the client's proof-of-possession key.
 
+![DPoP - PAR Diagram](https://github.com/wso2-extensions/identity-oauth-dpop/assets/110591829/cc696840-de86-4d9b-88dd-5e6d7f3bb12c)
+
+
 #### 3. Access Token from Password :
 
 ```
@@ -138,6 +231,7 @@ curl --location --request POST 'https://localhost:9443/oauth2/token' \
     "expires_in": 3600
 }
 ```
+![Screenshot from 2021-10-25 23-06-12](https://user-images.githubusercontent.com/26603378/138743329-5cc54271-08a6-44ec-938e-d675bdd24717.png)
 
 #### 4. Access Token from Refresh Token :
 
@@ -164,6 +258,8 @@ It is important to note that when accessing protected resources, the DPoP proof 
 `ath` claim. Refer [DPoP Proof JWT Syntax](https://datatracker.ietf.org/doc/html/rfc9449#name-dpop-proof-jwt-syntax) for more 
 details.
 
+![Invoke API(2)](https://user-images.githubusercontent.com/26603378/138742776-3d2c2714-c87e-4f77-9dce-24fde3df600e.jpeg)
+
 #### 6. Revoke Token :
 
 ```
@@ -175,4 +271,6 @@ curl --location --request POST 'https://localhost:9443/oauth2/revoke' \
 --data-urlencode 'token_type_hint=access_token'
 ```
 
+### Sample client application to create dpop proof
+PR : [wso2 /samples-is#302 ](https://github.com/wso2/samples-is/pull/302 )
 
