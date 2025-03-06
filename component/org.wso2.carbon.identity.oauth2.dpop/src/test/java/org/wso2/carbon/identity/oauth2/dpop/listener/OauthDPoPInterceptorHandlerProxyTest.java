@@ -39,13 +39,13 @@ import org.wso2.carbon.identity.oauth2.token.bindings.TokenBinding;
 
 import java.util.Collections;
 import java.util.Map;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class OauthDPoPInterceptorHandlerProxyTest {
     @Mock
