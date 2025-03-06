@@ -22,11 +22,12 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
 import org.wso2.carbon.base.CarbonBaseConstants;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.utils.CarbonUtils;
 
@@ -54,10 +55,19 @@ public class DPoPJKTCacheTest {
     public void setUp() {
         try (MockedStatic<CarbonUtils> carbonUtilsMock = mockStatic(CarbonUtils.class, Mockito.CALLS_REAL_METHODS)) {
 
-            carbonUtilsMock.when(CarbonUtils::getCarbonHome).thenReturn(System.getProperty(CarbonBaseConstants.CARBON_HOME));
+            carbonUtilsMock.when(CarbonUtils::getCarbonHome)
+                    .thenReturn(System.getProperty(CarbonBaseConstants.CARBON_HOME));
 
             dPoPJKTCache = DPoPJKTCache.getInstance();
+            PrivilegedCarbonContext.startTenantFlow();
+            PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain("carbon.super");
         }
+    }
+
+    @AfterMethod
+    public void tearDownMethod() {
+
+        PrivilegedCarbonContext.endTenantFlow();
     }
 
     @Test

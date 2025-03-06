@@ -2,6 +2,8 @@ package org.wso2.carbon.identity.oauth2.dpop.token.binder;
 
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.wso2.carbon.identity.core.handler.AbstractIdentityHandler;
@@ -16,9 +18,6 @@ import org.wso2.carbon.identity.oauth2.dpop.util.Utils;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenReqDTO;
 import org.wso2.carbon.identity.oauth2.token.bindings.TokenBinding;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,13 +25,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
+
 
 public class DPoPBasedTokenBinderTest {
 
@@ -45,9 +48,22 @@ public class DPoPBasedTokenBinderTest {
     @Mock
     private TokenBinding mockTokenBinding;
 
+    private static MockedStatic<OAuthServerConfiguration> mockedOAuthConfig;
+
     private DPoPBasedTokenBinder dPoPBasedTokenBinder;
 
     private IdentityEventListenerConfig identityEventListenerConfig;
+
+    @BeforeClass
+    public static void beforeClass() {
+        mockedOAuthConfig = mockStatic(OAuthServerConfiguration.class);
+    }
+
+    @AfterClass
+    public static void afterClass() {
+        mockedOAuthConfig.close();
+    }
+
 
     @BeforeMethod
     public void setUp() {
@@ -63,7 +79,10 @@ public class DPoPBasedTokenBinderTest {
 
         identityEventListenerConfig = new IdentityEventListenerConfig(
                 "true", 1, new IdentityEventListenerConfigKey(), properties);
+
+        dPoPBasedTokenBinder = new DPoPBasedTokenBinder();
     }
+
 
     @Test
     public void testGetDisplayName() {
@@ -82,14 +101,13 @@ public class DPoPBasedTokenBinderTest {
 
     @Test
     public void testGetSupportedGrantTypes() {
-        try (MockedStatic<OAuthServerConfiguration> mockedOAuthConfig = mockStatic(OAuthServerConfiguration.class)) {
-            OAuthServerConfiguration mockOAuthConfig = mock(OAuthServerConfiguration.class);
-            mockedOAuthConfig.when(OAuthServerConfiguration::getInstance).thenReturn(mockOAuthConfig);
-            when(mockOAuthConfig.getSupportedGrantTypes()).thenReturn(Collections.singletonMap("authorization_code", null));
+            OAuthServerConfiguration mockConfig = mock(OAuthServerConfiguration.class);
+            mockedOAuthConfig.when(OAuthServerConfiguration::getInstance).thenReturn(mockConfig);
+            when(mockConfig.getSupportedGrantTypes()).
+                    thenReturn(Collections.singletonMap("authorization_code", null));
 
             List<String> supportedGrantTypes = dPoPBasedTokenBinder.getSupportedGrantTypes();
             assertTrue(supportedGrantTypes.contains("authorization_code"));
-        }
     }
 
     @Test
@@ -150,13 +168,11 @@ public class DPoPBasedTokenBinderTest {
 
     @Test
     public void testGetAllGrantTypes() {
-        try (MockedStatic<OAuthServerConfiguration> mockedOAuthConfig = mockStatic(OAuthServerConfiguration.class)) {
-            OAuthServerConfiguration mockOAuthConfig = mock(OAuthServerConfiguration.class);
-            mockedOAuthConfig.when(OAuthServerConfiguration::getInstance).thenReturn(mockOAuthConfig);
-            when(mockOAuthConfig.getSupportedGrantTypes()).thenReturn(Collections.singletonMap("password", null));
+            OAuthServerConfiguration mockConfig = mock(OAuthServerConfiguration.class);
+            mockedOAuthConfig.when(OAuthServerConfiguration::getInstance).thenReturn(mockConfig);
+            when(mockConfig.getSupportedGrantTypes()).thenReturn(Collections.singletonMap("password", null));
 
             String[] grantTypes = dPoPBasedTokenBinder.getAllGrantTypes();
             assertTrue(Arrays.asList(grantTypes).contains("password"));
-        }
     }
 }

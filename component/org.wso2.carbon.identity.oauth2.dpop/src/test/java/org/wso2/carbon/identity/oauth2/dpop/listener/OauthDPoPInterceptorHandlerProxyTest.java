@@ -39,6 +39,7 @@ import org.wso2.carbon.identity.oauth2.token.bindings.TokenBinding;
 
 import java.util.Collections;
 import java.util.Map;
+
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
