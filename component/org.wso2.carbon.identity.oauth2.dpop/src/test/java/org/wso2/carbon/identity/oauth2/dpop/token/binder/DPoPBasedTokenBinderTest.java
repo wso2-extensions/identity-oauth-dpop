@@ -56,7 +56,10 @@ public class DPoPBasedTokenBinderTest {
 
     @BeforeClass
     public static void beforeClass() {
+        OAuthServerConfiguration mockOAuthServerConfiguration = mock(OAuthServerConfiguration.class);
         mockedOAuthConfig = mockStatic(OAuthServerConfiguration.class);
+        mockedOAuthConfig.when(OAuthServerConfiguration::getInstance).thenReturn(mockOAuthServerConfiguration);
+
     }
 
     @AfterClass

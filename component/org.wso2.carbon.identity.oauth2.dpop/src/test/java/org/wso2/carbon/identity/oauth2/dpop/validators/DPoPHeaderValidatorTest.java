@@ -53,6 +53,7 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletRequestWrapper;
 
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
@@ -155,16 +156,25 @@ public class DPoPHeaderValidatorTest {
 
     @Test
     public void testGetApplicationBindingType() throws Exception {
+        try (MockedStatic<OAuthServerConfiguration> mockOAuthServerConfig
+                     = mockStatic(OAuthServerConfiguration.class)) {
 
-        mockStatic(OAuthServerConfiguration.class);
-        when(OAuthServerConfiguration.getInstance()).thenReturn(oAuthServerConfiguration);
-        when(oAuthServerConfiguration.getTimeStampSkewInSeconds()).thenReturn(3600L);
-        mockStatic(OAuth2Util.class);
-        when(OAuth2Util.getAppInformationByClientId(anyString())).thenReturn(mockOAuthAppDO);
-        when(mockOAuthAppDO.getTokenBindingType()).thenReturn(DUMMY_TOKEN_BINDING_TYPE);
+            OAuthServerConfiguration mockConfig = mock(OAuthServerConfiguration.class);
+            mockOAuthServerConfig.when(OAuthServerConfiguration::getInstance).thenReturn(mockConfig);
+            when(mockConfig.getTimeStampSkewInSeconds()).thenReturn(3600L);
 
-        String tokenBindingType = dPoPHeaderValidator.getApplicationBindingType(DUMMY_CLIENT_ID);
-        assertEquals(tokenBindingType, DUMMY_TOKEN_BINDING_TYPE);
+            try (MockedStatic<OAuth2Util> mockOAuth2Util = mockStatic(OAuth2Util.class)) {
+
+                OAuthAppDO mockOAuthAppDO = mock(OAuthAppDO.class);
+                mockOAuth2Util.when(() -> OAuth2Util.getAppInformationByClientId(anyString()))
+                        .thenReturn(mockOAuthAppDO);
+                when(mockOAuthAppDO.getTokenBindingType()).thenReturn(DUMMY_TOKEN_BINDING_TYPE);
+
+                String tokenBindingType = dPoPHeaderValidator.getApplicationBindingType(DUMMY_CLIENT_ID);
+
+                assertEquals(tokenBindingType, DUMMY_TOKEN_BINDING_TYPE);
+            }
+        }
     }
 
     @DataProvider(name = "dpopProofProvider")
