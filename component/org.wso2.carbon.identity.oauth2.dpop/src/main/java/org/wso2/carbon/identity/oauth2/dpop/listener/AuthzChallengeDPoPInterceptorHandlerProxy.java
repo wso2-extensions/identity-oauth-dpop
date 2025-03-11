@@ -5,6 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.identity.oauth2.dpop.util.Utils;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AuthzChallengeReqDTO;
 import org.wso2.carbon.identity.oauth2.authzChallenge.event.AbstractAuthzChallengeInterceptor;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2ClientException;
@@ -22,7 +23,7 @@ public class AuthzChallengeDPoPInterceptorHandlerProxy extends AbstractAuthzChal
     }
 
     @Override
-    public void handleAuthzChallengeReq(OAuth2AuthzChallengeReqDTO requestDTO) throws IdentityOAuth2Exception {
+    public String handleAuthzChallengeReq(OAuth2AuthzChallengeReqDTO requestDTO) throws IdentityOAuth2Exception {
         try {
             String dPoPProof = DPoPHeaderValidator.extractDPoPHeader(requestDTO.getHttpRequestHeaders());
 
@@ -42,9 +43,9 @@ public class AuthzChallengeDPoPInterceptorHandlerProxy extends AbstractAuthzChal
                 throw new IdentityOAuth2ClientException(DPoPConstants.INVALID_DPOP_PROOF,
                         DPoPConstants.INVALID_DPOP_ERROR);
             }
+            return Utils.getThumbprintOfKeyFromDpopProof(dPoPProof);
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
     }
-
 }
