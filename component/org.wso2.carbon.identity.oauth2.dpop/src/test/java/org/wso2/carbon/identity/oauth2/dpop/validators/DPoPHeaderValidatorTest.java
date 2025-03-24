@@ -308,7 +308,8 @@ public class DPoPHeaderValidatorTest {
         when(oAuth2AccessTokenReqDTO.getHttpServletRequestWrapper()).thenReturn(httpServletRequest);
         when(httpServletRequest.getMethod()).thenReturn(DUMMY_HTTP_METHOD);
         when(httpServletRequest.getRequestURI()).thenReturn(DUMMY_HTTP_URL);
-        when(OAuth2Util.buildServiceUrl(DUMMY_HTTP_URL, null)).thenReturn(DUMMY_HTTP_URL);
+        when(OAuth2Util.buildServiceUrl(DUMMY_HTTP_URL, null, null))
+                .thenReturn(DUMMY_HTTP_URL);
         try {
             assertTrue(dPoPHeaderValidator.isValidDPoP(dPoPProof, oAuth2AccessTokenReqDTO, tokReqMsgCtx));
         } catch (IdentityOAuth2Exception e) {
