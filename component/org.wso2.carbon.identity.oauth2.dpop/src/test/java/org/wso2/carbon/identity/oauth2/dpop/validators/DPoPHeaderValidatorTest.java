@@ -53,6 +53,7 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletRequestWrapper;
 
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
@@ -73,14 +74,9 @@ import static org.wso2.carbon.identity.oauth2.dpop.util.DPoPTestConstants.DUMMY_
 
 public class DPoPHeaderValidatorTest {
 
-    @Mock
     private OAuthTokenReqMessageContext tokReqMsgCtx;
 
-    @Mock
     private OAuth2AccessTokenReqDTO oAuth2AccessTokenReqDTO;
-
-    @Mock
-    private HttpServletRequestWrapper httpServletRequest;
 
     @Mock
     private Properties properties;
@@ -118,6 +114,8 @@ public class DPoPHeaderValidatorTest {
         mockIdentityUtil.when(() -> IdentityUtil.readEventListenerProperty(anyString(), anyString()))
                 .thenReturn(identityEventListenerConfig);
         when(identityEventListenerConfig.getProperties()).thenReturn(properties);
+        oAuth2AccessTokenReqDTO = new OAuth2AccessTokenReqDTO();
+        tokReqMsgCtx = createTokenReqMessageContext();
     }
 
     @AfterMethod
@@ -143,8 +141,7 @@ public class DPoPHeaderValidatorTest {
     public void testGetDPoPHeader(Object httpRequestHeaders, String expectedResult) {
 
         try {
-            when(tokReqMsgCtx.getOauth2AccessTokenReqDTO()).thenReturn(oAuth2AccessTokenReqDTO);
-            when(oAuth2AccessTokenReqDTO.getHttpRequestHeaders()).thenReturn((HttpRequestHeader[]) httpRequestHeaders);
+            oAuth2AccessTokenReqDTO.setHttpRequestHeaders((HttpRequestHeader[]) httpRequestHeaders);
             String dPoPHeader = dPoPHeaderValidator.getDPoPHeader(tokReqMsgCtx);
             assertEquals(dPoPHeader, expectedResult);
         } catch (IdentityOAuth2ClientException e) {
@@ -304,15 +301,26 @@ public class DPoPHeaderValidatorTest {
 
     @Test(dataProvider = "isValidDPoPTestData")
     public void testIsValidDPoP(String dPoPProof) {
-
-        when(oAuth2AccessTokenReqDTO.getHttpServletRequestWrapper()).thenReturn(httpServletRequest);
-        when(httpServletRequest.getMethod()).thenReturn(DUMMY_HTTP_METHOD);
-        when(httpServletRequest.getRequestURL()).thenReturn(new StringBuffer(DUMMY_HTTP_URL));
+        when(OAuth2Util.buildServiceUrl(DUMMY_HTTP_URL, null, null))
+                .thenReturn(DUMMY_HTTP_URL);
         try {
             assertTrue(dPoPHeaderValidator.isValidDPoP(dPoPProof, oAuth2AccessTokenReqDTO, tokReqMsgCtx));
         } catch (IdentityOAuth2Exception e) {
             assertEquals(e.getErrorCode(), INVALID_DPOP_PROOF);
             assertEquals(e.getMessage(), INVALID_DPOP_ERROR);
         }
+    }
+
+    private OAuthTokenReqMessageContext createTokenReqMessageContext() {
+
+        OAuthTokenReqMessageContext tokenReqMessageContext =
+                new OAuthTokenReqMessageContext(oAuth2AccessTokenReqDTO);
+
+        HttpServletRequestWrapper httpServletRequestWrapper = mock(HttpServletRequestWrapper.class);
+        when(httpServletRequestWrapper.getMethod()).thenReturn(DUMMY_HTTP_METHOD);
+        when(httpServletRequestWrapper.getRequestURI()).thenReturn(DUMMY_HTTP_URL);
+        oAuth2AccessTokenReqDTO.setHttpServletRequestWrapper(httpServletRequestWrapper);
+
+        return tokenReqMessageContext;
     }
 }

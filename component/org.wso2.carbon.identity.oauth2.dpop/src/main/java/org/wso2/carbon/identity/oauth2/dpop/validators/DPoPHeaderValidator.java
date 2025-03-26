@@ -177,7 +177,9 @@ public class DPoPHeaderValidator {
         try {
             HttpServletRequest request = tokenReqDTO.getHttpServletRequestWrapper();
             String httpMethod = request.getMethod();
-            String httpURL = request.getRequestURL().toString();
+            String httpURI = request.getRequestURI();
+            String httpURL = OAuth2Util.buildServiceUrl(httpURI, null, null);
+            
             if (isValidDPoPProof(httpMethod, httpURL, dPoPProof)) {
                 String thumbprint = Utils.getThumbprintOfKeyFromDpopProof(dPoPProof);
                 if (StringUtils.isNotBlank(thumbprint)) {
