@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -39,6 +39,9 @@ import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
 import org.wso2.carbon.identity.oauth2.dpop.cache.DPoPJKTCache;
 import org.wso2.carbon.identity.oauth2.dpop.cache.DPoPJKTCacheEntry;
 import org.wso2.carbon.identity.oauth2.dpop.cache.DPoPJKTCacheKey;
+import org.wso2.carbon.identity.oauth2.dpop.cache.DPoPJTICache;
+import org.wso2.carbon.identity.oauth2.dpop.cache.DPoPJTICacheEntry;
+import org.wso2.carbon.identity.oauth2.dpop.cache.DPoPJTICacheKey;
 import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
 import org.wso2.carbon.identity.oauth2.dpop.dao.DPoPJKTDAOImpl;
 import org.wso2.carbon.identity.oauth2.dpop.dao.JWTEntry;
@@ -467,15 +470,27 @@ public class DPoPHeaderValidator {
 
     private boolean isJTIReplay(String jti, int tenantId) throws IdentityOAuth2Exception {
 
+        DPoPJTICache jtiCache = DPoPJTICache.getInstance();
+        DPoPJTICacheKey cacheKey = Utils.isTenantIdColumnAvailableInIdnOidcAuth() ?
+                new DPoPJTICacheKey(jti, tenantId) : new DPoPJTICacheKey(jti);
+        DPoPJTICacheEntry cacheEntry = jtiCache.getValueFromCache(cacheKey);
+
+        if (cacheEntry != null) {
+
+            throw new IdentityOAuth2ClientException(DPoPConstants.INVALID_DPOP_PROOF,
+                    DPoPConstants.DPOP_PROOF_REPLAYED);
+        }
+
         JWTEntry jwtEntry = getJTIfromDB(jti, tenantId);
         if (jwtEntry == null) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("JWT id: " + jti + " not found in the Storage. The JWT has been validated successfully.");
             }
+            jtiCache.addToCache(cacheKey, new DPoPJTICacheEntry(null));
             return true;
         } else {
             throw new IdentityOAuth2ClientException(DPoPConstants.INVALID_DPOP_PROOF,
-                    DPoPConstants.INVALID_DPOP_ERROR);
+                    DPoPConstants.DPOP_PROOF_REPLAYED);
         }
     }
 

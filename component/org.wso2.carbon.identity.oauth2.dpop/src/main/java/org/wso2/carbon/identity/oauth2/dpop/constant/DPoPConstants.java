@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -55,16 +55,12 @@ public class DPoPConstants {
     public static final String OAUTH_REVOKE_ENDPOINT = "/oauth2/revoke";
     public static final String SKIP_DPOP_VALIDATION_IN_REVOKE = "skip_dpop_validation_in_revoke";
     public static final boolean DEFAULT_SKIP_DPOP_VALIDATION_IN_REVOKE_VALUE = true;
+    public static final String DPOP_PROOF_REPLAYED = "DPoP Proof has been replayed";
 
     // DPoP JTI persistence related keys
     public static final String GET_JWT_ID = "GET_JWT_ID";
     public static final String GET_JWT = "GET_JWT";
     public static final String GET_JWT_DETAILS = "GET_JWT_DETAILS";
-    public static final String UPSERT_MYSQL = "UPSERT_MYSQL";
-    public static final String UPSERT_H2 = "UPSERT_H2";
-    public static final String UPSERT_POSTGRESQL = "UPSERT_POSTGRESQL";
-    public static final String UPSERT_ORACLE = "UPSERT_ORACLE";
-    public static final String UPSERT_MSSQL_DB2 = "UPSERT_MSSQL_DB2";
     public static final String INSERT_JWD_ID = "INSERT_JWD_ID";
     public static final int DEFAULT_TENANT_ID = -1;
 
