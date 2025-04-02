@@ -57,7 +57,7 @@ public class JWTStorageManager {
                 ? Utils.getDBQuery(GET_JWT_DETAILS)
                 : Utils.getDBQuery(GET_JWT);
 
-        try (Connection connection = IdentityDatabaseUtil.getDBConnection();
+        try (Connection connection = IdentityDatabaseUtil.getDBConnection(false);
              PreparedStatement prepStmt = connection.prepareStatement(query)) {
 
             prepStmt.setString(1, jti);
