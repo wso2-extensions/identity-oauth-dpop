@@ -35,22 +35,22 @@ public class JWTStorageManagerTest {
 
     private MockedStatic<Utils> mockUtils;
 
-
-
     @BeforeClass
     public void setUp() throws Exception {
-        jwtStorageManager = new JWTStorageManager();
 
+        jwtStorageManager = new JWTStorageManager();
         initiateH2Base(getFilePath("h2.sql"));
     }
 
     @BeforeMethod
     public void init() throws Exception {
+
         mockUtils = mockStatic(Utils.class);
     }
 
     @AfterMethod
     public void tearDown() {
+
         if (mockUtils != null) {
             mockUtils.close();
         }
@@ -58,6 +58,7 @@ public class JWTStorageManagerTest {
 
     @Test(priority = 1)
     public void testGetJwtsFromDBWithNoEntry() throws Exception {
+
         try (Connection connection = getConnection(DB_NAME);
              MockedStatic<IdentityDatabaseUtil> identityDatabaseUtil = mockStatic(IdentityDatabaseUtil.class)) {
             prepareConnection(connection, false, identityDatabaseUtil);
@@ -76,6 +77,7 @@ public class JWTStorageManagerTest {
 
     @Test(priority = 2)
     public void persistJTIinDB() throws Exception {
+
         try (Connection connection = getConnection(DB_NAME);
              MockedStatic<IdentityDatabaseUtil> identityDatabaseUtil = mockStatic(IdentityDatabaseUtil.class)) {
             prepareConnection(connection, true, identityDatabaseUtil);
@@ -97,6 +99,7 @@ public class JWTStorageManagerTest {
 
     @Test(priority = 3)
     public void testGetJwtsFromDB() throws Exception {
+
         try (Connection connection = getConnection(DB_NAME);
              MockedStatic<IdentityDatabaseUtil> identityDatabaseUtil = mockStatic(IdentityDatabaseUtil.class)) {
             prepareConnection(connection, false, identityDatabaseUtil);
@@ -114,6 +117,7 @@ public class JWTStorageManagerTest {
 
     @Test(priority = 4, expectedExceptions = IdentityOAuth2Exception.class)
     public void testGetJwtsFromDBWithSQLException() throws Exception {
+
         try (Connection connection = getConnection(DB_NAME);
              MockedStatic<IdentityDatabaseUtil> identityDatabaseUtil = mockStatic(IdentityDatabaseUtil.class)) {
 
@@ -132,6 +136,7 @@ public class JWTStorageManagerTest {
 
     @Test(priority = 5, expectedExceptions = IdentityOAuth2Exception.class)
     public void testPersistJWTIdInDBNoRowsAffected() throws Exception {
+
         try (Connection connection = getConnection(DB_NAME);
              MockedStatic<IdentityDatabaseUtil> identityDatabaseUtil = mockStatic(IdentityDatabaseUtil.class)) {
 
