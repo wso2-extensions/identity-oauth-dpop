@@ -78,6 +78,8 @@ public class DPoPConstants {
         public static final String INSERT_TENANTED_JWD_ID = "INSERT INTO IDN_OIDC_JTI (JWT_ID, TENANT_ID, EXP_TIME, " +
                 "TIME_CREATED) VALUES (?,?,?,?)";
 
+        public static final String GET_JWT = "SELECT EXP_TIME,TIME_CREATED FROM IDN_OIDC_JTI WHERE JWT_ID =?";
+
         public static final String GET_JWT_ID = "SELECT 1 FROM IDN_OIDC_JTI WHERE JWT_ID =?";
 
         public static final String GET_TENANTED_JWT_ID = "SELECT 1 FROM IDN_OIDC_JTI WHERE JWT_ID =? AND TENANT_ID=?";

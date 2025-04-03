@@ -140,6 +140,7 @@ public class Utils {
             queries.put(DPoPConstants.GET_JWT_DETAILS, DPoPConstants.SQLQueries.GET_JWT_DETAIL);
         } else {
             queries.put(DPoPConstants.GET_JWT_ID, DPoPConstants.SQLQueries.GET_JWT_ID);
+            queries.put(DPoPConstants.GET_JWT, DPoPConstants.SQLQueries.GET_JWT);
             queries.put(DPoPConstants.INSERT_JWD_ID, DPoPConstants.SQLQueries.INSERT_JWD_ID);
         }
     }
