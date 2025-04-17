@@ -22,6 +22,13 @@ public class AuthzChallengeDPoPInterceptorHandlerProxy extends AbstractAuthzChal
         this.dPoPHeaderValidator = dPoPHeaderValidator;
     }
 
+    /**
+     * Handles the authorize-challenge request by validating the DPoP header.
+     *
+     * @param requestDTO authorize-challenge request DTO
+     * @return thumbprint of the key extracted from the DPoP proof
+     * @throws IdentityOAuth2Exception error during DPoP validation or parsing
+     */
     @Override
     public String handleAuthzChallengeReq(OAuth2AuthzChallengeReqDTO requestDTO) throws IdentityOAuth2Exception {
         try {
@@ -45,7 +52,8 @@ public class AuthzChallengeDPoPInterceptorHandlerProxy extends AbstractAuthzChal
             }
             return Utils.getThumbprintOfKeyFromDpopProof(dPoPProof);
         } catch (ParseException e) {
-            throw new RuntimeException(e);
+            throw new IdentityOAuth2ClientException(DPoPConstants.INVALID_DPOP_PROOF,
+                    "Error parsing DPoP proof header." , e);
         }
     }
 }
