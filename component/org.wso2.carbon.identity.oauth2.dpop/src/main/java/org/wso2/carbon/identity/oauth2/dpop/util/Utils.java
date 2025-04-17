@@ -37,11 +37,18 @@ import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils.isTableColumnExists;
 
 /**
  * This class provides utility functions for dpop implementation.
  */
 public class Utils {
+
+    private static boolean isTenantIdColumnIsAvailableInIdnOidcAuthTable = false;
+    private static Map<String, String> queries = new HashMap<>();
 
     public static JdbcTemplate getNewTemplate() {
 
@@ -104,4 +111,39 @@ public class Utils {
 
         return signedJwt.verify(jwsVerifier);
     }
+
+    public static String getDBQuery(String key) {
+
+        return queries.get(key);
+    }
+
+    public static boolean isTenantIdColumnAvailableInIdnOidcAuth() {
+
+        return isTenantIdColumnIsAvailableInIdnOidcAuthTable;
+    }
+
+    /**
+     * Checking whether the tenant id column is available in the IDN_OIDC_JTI table.
+     */
+    public static void checkIfTenantIdColumnIsAvailableInIdnOidcAuthTable() {
+
+        isTenantIdColumnIsAvailableInIdnOidcAuthTable = isTableColumnExists(DPoPConstants.SQLQueries.IDN_OIDC_JTI,
+                DPoPConstants.SQLQueries.TENANT_ID);
+        buildQueryMapping();
+    }
+
+    private static void buildQueryMapping() {
+
+        if (isTenantIdColumnIsAvailableInIdnOidcAuthTable) {
+            queries.put(DPoPConstants.GET_JWT_ID, DPoPConstants.SQLQueries.GET_TENANTED_JWT_ID);
+            queries.put(DPoPConstants.INSERT_JWD_ID, DPoPConstants.SQLQueries.INSERT_TENANTED_JWD_ID);
+            queries.put(DPoPConstants.GET_JWT_DETAILS, DPoPConstants.SQLQueries.GET_JWT_DETAIL);
+        } else {
+            queries.put(DPoPConstants.GET_JWT_ID, DPoPConstants.SQLQueries.GET_JWT_ID);
+            queries.put(DPoPConstants.GET_JWT, DPoPConstants.SQLQueries.GET_JWT);
+            queries.put(DPoPConstants.INSERT_JWD_ID, DPoPConstants.SQLQueries.INSERT_JWD_ID);
+        }
+    }
+
 }
+

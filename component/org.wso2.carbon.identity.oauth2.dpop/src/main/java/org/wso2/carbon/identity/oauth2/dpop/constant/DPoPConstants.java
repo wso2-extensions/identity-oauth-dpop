@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -55,4 +55,36 @@ public class DPoPConstants {
     public static final String OAUTH_REVOKE_ENDPOINT = "/oauth2/revoke";
     public static final String SKIP_DPOP_VALIDATION_IN_REVOKE = "skip_dpop_validation_in_revoke";
     public static final boolean DEFAULT_SKIP_DPOP_VALIDATION_IN_REVOKE_VALUE = true;
+    public static final String DPOP_PROOF_REPLAYED = "DPoP Proof has been replayed";
+
+    // DPoP JTI persistence related keys
+    public static final String GET_JWT_ID = "GET_JWT_ID";
+    public static final String GET_JWT = "GET_JWT";
+    public static final String GET_JWT_DETAILS = "GET_JWT_DETAILS";
+    public static final String INSERT_JWD_ID = "INSERT_JWD_ID";
+    public static final int DEFAULT_TENANT_ID = -1;
+
+    /**
+     * SQL Queries for the JWT ID persistence.
+     */
+    public static class SQLQueries {
+
+        public static final String TENANT_ID = "TENANT_ID";
+        public static final String IDN_OIDC_JTI = "IDN_OIDC_JTI";
+        public static final String EXP_TIME = "EXP_TIME";
+        public static final String TIME_CREATED = "TIME_CREATED";
+        public static final String INSERT_JWD_ID = "INSERT INTO IDN_OIDC_JTI (JWT_ID, EXP_TIME, TIME_CREATED)" +
+                "VALUES (?,?,?)";
+        public static final String INSERT_TENANTED_JWD_ID = "INSERT INTO IDN_OIDC_JTI (JWT_ID, TENANT_ID, EXP_TIME, " +
+                "TIME_CREATED) VALUES (?,?,?,?)";
+
+        public static final String GET_JWT = "SELECT EXP_TIME,TIME_CREATED FROM IDN_OIDC_JTI WHERE JWT_ID =?";
+
+        public static final String GET_JWT_ID = "SELECT 1 FROM IDN_OIDC_JTI WHERE JWT_ID =?";
+
+        public static final String GET_TENANTED_JWT_ID = "SELECT 1 FROM IDN_OIDC_JTI WHERE JWT_ID =? AND TENANT_ID=?";
+
+        public static final String GET_JWT_DETAIL = "SELECT TENANT_ID, EXP_TIME,TIME_CREATED FROM IDN_OIDC_JTI WHERE " +
+                "JWT_ID =? AND TENANT_ID IN (?,?)";
+    }
 }

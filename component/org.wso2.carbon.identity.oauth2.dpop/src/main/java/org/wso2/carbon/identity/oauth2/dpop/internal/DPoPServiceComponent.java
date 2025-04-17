@@ -39,6 +39,7 @@ import org.wso2.carbon.identity.oauth2.dpop.handler.DPoPEventHandler;
 import org.wso2.carbon.identity.oauth2.dpop.introspection.dataprovider.DPoPIntrospectionDataProvider;
 import org.wso2.carbon.identity.oauth2.dpop.listener.OauthDPoPInterceptorHandlerProxy;
 import org.wso2.carbon.identity.oauth2.dpop.token.binder.DPoPBasedTokenBinder;
+import org.wso2.carbon.identity.oauth2.dpop.util.Utils;
 import org.wso2.carbon.identity.oauth2.dpop.validators.DPoPHeaderValidator;
 import org.wso2.carbon.identity.oauth2.dpop.validators.DPoPTokenValidator;
 import org.wso2.carbon.identity.oauth2.validators.OAuth2TokenValidator;
@@ -66,6 +67,7 @@ public class DPoPServiceComponent {
                         "Setting isDPoPJKTTableEnabled to " + isAvailableTable);
             }
             DPoPDataHolder.setDPoPJKTTableEnabled(isAvailableTable);
+            Utils.checkIfTenantIdColumnIsAvailableInIdnOidcAuthTable();
 
             DPoPDataHolder.getInstance().setTokenBindingTypeManagerDao(new DPoPTokenManagerDAOImpl());
             context.getBundleContext().registerService(TokenBinderInfo.class.getName(),

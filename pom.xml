@@ -220,6 +220,12 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>${h2database.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.carbon.identity.framework</groupId>
                 <artifactId>org.wso2.carbon.identity.testutil</artifactId>
                 <version>${carbon.identity.version}</version>
@@ -472,6 +478,7 @@
         <commons.collections.version>3.2.2</commons.collections.version>
         <testng.version>6.9.10</testng.version>
         <jacoco.version>0.8.12</jacoco.version>
+        <h2database.version>2.2.224</h2database.version>
         <mockito.version>4.11.0</mockito.version>
         <maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version>
         <javaee.web.api.version>7.0</javaee.web.api.version>
