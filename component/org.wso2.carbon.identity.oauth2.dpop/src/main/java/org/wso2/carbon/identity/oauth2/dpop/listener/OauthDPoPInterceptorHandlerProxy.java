@@ -107,7 +107,8 @@ public class OauthDPoPInterceptorHandlerProxy extends AbstractOAuthEventIntercep
         }
         try {
             String tokenBindingType = dPoPHeaderValidator.getApplicationBindingType(tokenReqDTO.getClientId());
-            TokenBinding tokenBinding = tokenBindingTypeManagerDao.getTokenBinding(tokenReqDTO.getRefreshToken());
+            TokenBinding tokenBinding = tokenBindingTypeManagerDao
+                    .getTokenBindingUsingHash(tokenReqDTO.getRefreshToken());
             if (tokenBinding != null) {
                 if (!DPoPConstants.DPOP_TOKEN_TYPE.equals(tokenBindingType)) {
                     if (LOG.isDebugEnabled()) {

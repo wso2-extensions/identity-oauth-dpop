@@ -132,7 +132,7 @@ public class DPoPBasedTokenBinder extends AbstractTokenBinder {
         String refreshToken = oAuth2AccessTokenReqDTO.getRefreshToken();
         try {
             TokenBinding tokenBinding =
-                    tokenBindingTypeManagerDao.getTokenBinding(refreshToken);
+                    tokenBindingTypeManagerDao.getTokenBindingUsingHash(refreshToken);
 
             if (tokenBinding != null && DPoPConstants.OAUTH_DPOP_HEADER.equals(tokenBinding.getBindingType())) {
                 return bindingReference.equalsIgnoreCase(tokenBinding.getBindingReference());

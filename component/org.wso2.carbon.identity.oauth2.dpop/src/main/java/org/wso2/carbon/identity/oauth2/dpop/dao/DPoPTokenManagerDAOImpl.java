@@ -35,7 +35,7 @@ import java.util.List;
 public class DPoPTokenManagerDAOImpl implements DPoPTokenManagerDAO {
 
     @Override
-    public TokenBinding getTokenBinding(String refreshToken)
+    public TokenBinding getTokenBindingUsingHash(String refreshToken)
             throws IdentityOAuth2Exception {
 
         JdbcTemplate jdbcTemplate = Utils.getNewTemplate();

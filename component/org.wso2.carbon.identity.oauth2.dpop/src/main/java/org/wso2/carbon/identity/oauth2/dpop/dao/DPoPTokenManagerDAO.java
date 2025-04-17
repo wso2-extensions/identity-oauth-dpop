@@ -33,5 +33,5 @@ public interface DPoPTokenManagerDAO {
      * @return TokenBinding from the refresh token.
      * @throws IdentityOAuth2Exception If an error occurs while retrieving the binding type.
      */
-    TokenBinding getTokenBinding(String refreshToken) throws IdentityOAuth2Exception;
+    TokenBinding getTokenBindingUsingHash(String refreshToken) throws IdentityOAuth2Exception;
 }
