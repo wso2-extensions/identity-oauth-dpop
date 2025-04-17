@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2024-2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -34,34 +34,19 @@ import java.util.List;
  */
 public class DPoPTokenManagerDAOImpl implements DPoPTokenManagerDAO {
 
-    private static TokenPersistenceProcessor hashingPersistenceProcessor;
-
-    public DPoPTokenManagerDAOImpl() {
-
-        hashingPersistenceProcessor = new HashingPersistenceProcessor();
-    }
-
     @Override
-    public TokenBinding getTokenBinding(String refreshToken, boolean isTokenHashingEnabled)
-            throws IdentityOAuth2Exception {
-
-        if (isTokenHashingEnabled) {
-            return getBindingFromRefreshToken(refreshToken, true);
-        }
-        return getBindingFromRefreshToken(refreshToken, false);
-    }
-
-    private TokenBinding getBindingFromRefreshToken(String refreshToken, boolean isTokenHashingEnabled)
+    public TokenBinding getTokenBindingUsingHash(String refreshToken)
             throws IdentityOAuth2Exception {
 
         JdbcTemplate jdbcTemplate = Utils.getNewTemplate();
-        if (isTokenHashingEnabled) {
-            refreshToken = hashingPersistenceProcessor.getProcessedRefreshToken(refreshToken);
-        }
+
+        TokenPersistenceProcessor hashingPersistenceProcessor = new HashingPersistenceProcessor();
+        refreshToken = hashingPersistenceProcessor.getProcessedRefreshToken(refreshToken);
+
         try {
             String finalRefreshToken = refreshToken;
             List<TokenBinding> tokenBindingList = jdbcTemplate.executeQuery(
-                    SQLQueries.RETRIEVE_TOKEN_BINDING_BY_REFRESH_TOKEN,
+                    SQLQueries.RETRIEVE_TOKEN_BINDING_BY_REFRESH_TOKEN_HASH,
                     (resultSet, rowNumber) -> {
                         TokenBinding tokenBinding = new TokenBinding();
                         tokenBinding.setBindingType(resultSet.getString(1));

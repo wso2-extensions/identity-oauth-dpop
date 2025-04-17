@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2024-2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -36,7 +36,6 @@ import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenReqDTO;
 import org.wso2.carbon.identity.oauth2.model.HttpRequestHeader;
 import org.wso2.carbon.identity.oauth2.token.bindings.TokenBinding;
 import org.wso2.carbon.identity.oauth2.token.bindings.impl.AbstractTokenBinder;
-import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -133,7 +132,7 @@ public class DPoPBasedTokenBinder extends AbstractTokenBinder {
         String refreshToken = oAuth2AccessTokenReqDTO.getRefreshToken();
         try {
             TokenBinding tokenBinding =
-                    tokenBindingTypeManagerDao.getTokenBinding(refreshToken, OAuth2Util.isHashEnabled());
+                    tokenBindingTypeManagerDao.getTokenBindingUsingHash(refreshToken);
 
             if (tokenBinding != null && DPoPConstants.OAUTH_DPOP_HEADER.equals(tokenBinding.getBindingType())) {
                 return bindingReference.equalsIgnoreCase(tokenBinding.getBindingReference());
