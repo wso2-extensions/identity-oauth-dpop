@@ -232,6 +232,12 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>${h2database.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>com.googlecode.json-simple.wso2</groupId>
                 <artifactId>json-simple</artifactId>
                 <version>${json-simple.version}</version>
@@ -410,7 +416,7 @@
     </build>
 
     <properties>
-        <carbon.identity.version>5.20.322</carbon.identity.version>
+        <carbon.identity.version>7.8.3</carbon.identity.version>
         <carbon.identity.application.common.version>5.25.305</carbon.identity.application.common.version>
         <carbon.utils.version>4.9.10</carbon.utils.version>
         <identity.inbound.auth.oauth.version>7.0.268</identity.inbound.auth.oauth.version>
@@ -470,8 +476,9 @@
 
         <!--Test Dependencies-->
         <commons.collections.version>3.2.2</commons.collections.version>
-        <testng.version>6.9.10</testng.version>
+        <testng.version>7.10.1</testng.version>
         <jacoco.version>0.8.12</jacoco.version>
+        <h2database.version>2.2.224</h2database.version>
         <mockito.version>4.11.0</mockito.version>
         <maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version>
         <javaee.web.api.version>7.0</javaee.web.api.version>
