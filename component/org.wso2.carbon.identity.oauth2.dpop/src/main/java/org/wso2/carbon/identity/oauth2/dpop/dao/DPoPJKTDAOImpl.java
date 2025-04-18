@@ -57,11 +57,7 @@ public class DPoPJKTDAOImpl implements DPoPJKTDAO {
             prepStmt = connection.prepareStatement(sql);
             prepStmt.setString(1, codeId);
             prepStmt.setString(2, dpopJkt);
-            boolean flag = prepStmt.execute();
-
-            if (flag) {
-                LOG.debug("DPoP JKT persisted successfully for consumer key: " + consumerKey);
-            }
+            prepStmt.execute();
         } catch (SQLException e) {
             throw new IdentityOAuth2Exception("Error when persisting the dpop_jkt for consumer key : "
                     + consumerKey, e);
