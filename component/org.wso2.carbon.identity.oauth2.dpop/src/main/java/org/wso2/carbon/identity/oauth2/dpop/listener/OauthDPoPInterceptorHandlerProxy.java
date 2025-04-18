@@ -71,7 +71,7 @@ public class OauthDPoPInterceptorHandlerProxy extends AbstractOAuthEventIntercep
             String tokenBindingType = dPoPHeaderValidator.getApplicationBindingType(tokenReqDTO.getClientId());
             if (DPoPConstants.DPOP_TOKEN_TYPE.equals(tokenBindingType)) {
 
-                String dPoPProof = dPoPHeaderValidator.getDPoPHeaderFromTokenRequest(tokReqMsgCtx);
+                String dPoPProof = dPoPHeaderValidator.getDPoPHeader(tokReqMsgCtx);
                 if (StringUtils.isBlank(dPoPProof)) {
                     throw new IdentityOAuth2ClientException(DPoPConstants.INVALID_DPOP_PROOF,
                             "DPoP header is required.");
@@ -120,7 +120,7 @@ public class OauthDPoPInterceptorHandlerProxy extends AbstractOAuthEventIntercep
                             DPoPConstants.INVALID_CLIENT_ERROR);
                 }
 
-                String dPoPProof = dPoPHeaderValidator.getDPoPHeaderFromTokenRequest(tokReqMsgCtx);
+                String dPoPProof = dPoPHeaderValidator.getDPoPHeader(tokReqMsgCtx);
                 if (StringUtils.isBlank(dPoPProof)) {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(String.format("Renewal request received without the DPoP proof from the " +

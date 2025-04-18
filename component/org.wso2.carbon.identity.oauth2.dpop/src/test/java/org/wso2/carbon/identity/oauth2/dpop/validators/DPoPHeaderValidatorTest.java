@@ -140,12 +140,12 @@ public class DPoPHeaderValidatorTest {
     }
 
     @Test(dataProvider = "dpopHeaderProvider")
-    public void testGetDPoPHeaderFromTokenRequest(Object httpRequestHeaders, String expectedResult) {
+    public void testGetDPoPHeader(Object httpRequestHeaders, String expectedResult) {
 
         try {
             when(tokReqMsgCtx.getOauth2AccessTokenReqDTO()).thenReturn(oAuth2AccessTokenReqDTO);
             when(oAuth2AccessTokenReqDTO.getHttpRequestHeaders()).thenReturn((HttpRequestHeader[]) httpRequestHeaders);
-            String dPoPHeader = dPoPHeaderValidator.getDPoPHeaderFromTokenRequest(tokReqMsgCtx);
+            String dPoPHeader = dPoPHeaderValidator.getDPoPHeader(tokReqMsgCtx);
             assertEquals(dPoPHeader, expectedResult);
         } catch (IdentityOAuth2ClientException e) {
             assertEquals(e.getErrorCode(), INVALID_DPOP_PROOF);

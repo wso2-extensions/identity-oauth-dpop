@@ -72,13 +72,13 @@ public class DPoPHeaderValidator {
      * @param tokReqMsgCtx Message context of token request.
      * @return DPoP header.
      */
-    public String getDPoPHeaderFromTokenRequest(OAuthTokenReqMessageContext tokReqMsgCtx) throws IdentityOAuth2ClientException {
+    public String getDPoPHeader(OAuthTokenReqMessageContext tokReqMsgCtx) throws IdentityOAuth2ClientException {
 
         HttpRequestHeader[] httpRequestHeaders = tokReqMsgCtx.getOauth2AccessTokenReqDTO().getHttpRequestHeaders();
         return extractDPoPHeader(httpRequestHeaders);
     }
 
-    public static String extractDPoPHeader(HttpRequestHeader[] httpRequestHeaders) throws IdentityOAuth2ClientException {
+    public String extractDPoPHeader(HttpRequestHeader[] httpRequestHeaders) throws IdentityOAuth2ClientException {
         if (httpRequestHeaders != null) {
             for (HttpRequestHeader header : httpRequestHeaders) {
                 if (header != null && DPoPConstants.OAUTH_DPOP_HEADER.equalsIgnoreCase(header.getName())) {

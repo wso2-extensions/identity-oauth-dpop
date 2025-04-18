@@ -50,7 +50,7 @@ public class AuthzChallengeDPoPInterceptorHandlerProxy extends AbstractAuthzChal
     @Override
     public String handleAuthzChallengeReq(OAuth2AuthzChallengeReqDTO requestDTO) throws IdentityOAuth2Exception {
         try {
-            String dPoPProof = DPoPHeaderValidator.extractDPoPHeader(requestDTO.getHttpRequestHeaders());
+            String dPoPProof = dPoPHeaderValidator.extractDPoPHeader(requestDTO.getHttpRequestHeaders());
 
             if (StringUtils.isBlank(dPoPProof)) {
                 throw new IdentityOAuth2ClientException(DPoPConstants.INVALID_DPOP_PROOF,
