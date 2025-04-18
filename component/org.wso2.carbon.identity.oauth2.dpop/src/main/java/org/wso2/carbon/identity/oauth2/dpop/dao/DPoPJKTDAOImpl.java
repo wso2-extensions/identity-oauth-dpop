@@ -62,7 +62,7 @@ public class DPoPJKTDAOImpl implements DPoPJKTDAO {
             throw new IdentityOAuth2Exception("Error when persisting the dpop_jkt for consumer key : "
                     + consumerKey, e);
         } finally {
-            IdentityDatabaseUtil.closeConnection(connection);
+            IdentityDatabaseUtil.closeAllConnections(connection, null, prepStmt);
         }
     }
 

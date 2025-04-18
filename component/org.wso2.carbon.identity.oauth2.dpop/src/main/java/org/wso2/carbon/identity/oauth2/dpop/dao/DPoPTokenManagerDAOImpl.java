@@ -34,8 +34,6 @@ import java.util.List;
  */
 public class DPoPTokenManagerDAOImpl implements DPoPTokenManagerDAO {
 
-    private TokenPersistenceProcessor hashingPersistenceProcessor = new HashingPersistenceProcessor();
-
     @Override
     public TokenBinding getTokenBindingUsingHash(String refreshToken)
             throws IdentityOAuth2Exception {
@@ -46,6 +44,7 @@ public class DPoPTokenManagerDAOImpl implements DPoPTokenManagerDAO {
 
         JdbcTemplate jdbcTemplate = Utils.getNewTemplate();
 
+        TokenPersistenceProcessor hashingPersistenceProcessor = new HashingPersistenceProcessor();
         refreshToken = hashingPersistenceProcessor.getProcessedRefreshToken(refreshToken);
 
         try {
