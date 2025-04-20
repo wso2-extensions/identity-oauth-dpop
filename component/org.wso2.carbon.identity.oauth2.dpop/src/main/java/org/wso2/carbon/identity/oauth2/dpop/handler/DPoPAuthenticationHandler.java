@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2024-2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpHeaders;
+import org.wso2.carbon.identity.application.common.model.User;
 import org.wso2.carbon.identity.auth.service.AuthenticationContext;
 import org.wso2.carbon.identity.auth.service.AuthenticationRequest;
 import org.wso2.carbon.identity.auth.service.AuthenticationResult;
@@ -29,12 +30,15 @@ import org.wso2.carbon.identity.auth.service.AuthenticationStatus;
 import org.wso2.carbon.identity.auth.service.exception.AuthenticationFailException;
 import org.wso2.carbon.identity.auth.service.handler.AuthenticationHandler;
 import org.wso2.carbon.identity.auth.service.util.AuthConfigurationUtil;
+import org.wso2.carbon.identity.auth.service.util.Constants;
 import org.wso2.carbon.identity.core.bean.context.MessageContext;
 import org.wso2.carbon.identity.oauth2.OAuth2TokenValidationService;
 import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2ClientApplicationDTO;
+import org.wso2.carbon.identity.oauth2.dto.OAuth2IntrospectionResponseDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2TokenValidationRequestDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2TokenValidationResponseDTO;
+import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -73,6 +77,21 @@ public class DPoPAuthenticationHandler extends AuthenticationHandler {
                 setContextParam(authenticationRequest, requestDTO);
                 OAuth2ClientApplicationDTO clientApplicationDTO =
                         oAuth2TokenValidationService.findOAuthConsumerIfTokenIsValid(requestDTO);
+
+                OAuth2IntrospectionResponseDTO oAuth2IntrospectionResponseDTO =
+                        oAuth2TokenValidationService.buildIntrospectionResponse(requestDTO);
+
+                User authorizedUser = oAuth2IntrospectionResponseDTO.getAuthorizedUser();
+
+                if (authorizedUser != null) {
+                    authenticationContext.setUser(authorizedUser);
+                }
+
+                authenticationContext.addParameter(Constants.OAUTH2_ALLOWED_SCOPES,
+                        OAuth2Util.buildScopeArray(oAuth2IntrospectionResponseDTO.getScope()));
+                authenticationContext.addParameter(Constants.OAUTH2_VALIDATE_SCOPE,
+                        AuthConfigurationUtil.getInstance().isScopeValidationEnabled());
+
                 OAuth2TokenValidationResponseDTO responseDTO = clientApplicationDTO.getAccessTokenValidationResponse();
                 if (!responseDTO.isValid()) {
                     if (LOG.isDebugEnabled()) {

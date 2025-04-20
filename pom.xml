@@ -28,7 +28,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.carbon.extension.identity.oauth.dpop</groupId>
     <artifactId>identity-oauth-dpop</artifactId>
-    <version>1.0.12-SNAPSHOT</version>
+    <version>1.0.16-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Identity OAuth DPoP</name>
     <url>http://wso2.org</url>
@@ -376,6 +376,25 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>buildnumber-maven-plugin</artifactId>
             </plugin>
@@ -394,7 +413,7 @@
         <carbon.identity.version>5.20.322</carbon.identity.version>
         <carbon.identity.application.common.version>5.25.305</carbon.identity.application.common.version>
         <carbon.utils.version>4.9.10</carbon.utils.version>
-        <identity.inbound.auth.oauth.version>7.0.239</identity.inbound.auth.oauth.version>
+        <identity.inbound.auth.oauth.version>7.0.268</identity.inbound.auth.oauth.version>
         <org.wso2.carbon.identity.core.version>5.25.383</org.wso2.carbon.identity.core.version>
         <org.wso2.carbon.database.utils.version>2.0.7</org.wso2.carbon.database.utils.version>
         <org.wso2.carbon.database.utils.version.range>[2.0.0,3.0.0)</org.wso2.carbon.database.utils.version.range>
@@ -452,7 +471,7 @@
         <!--Test Dependencies-->
         <commons.collections.version>3.2.2</commons.collections.version>
         <testng.version>6.9.10</testng.version>
-        <jacoco.version>0.7.9</jacoco.version>
+        <jacoco.version>0.8.12</jacoco.version>
         <mockito.version>4.11.0</mockito.version>
         <maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version>
         <javaee.web.api.version>7.0</javaee.web.api.version>
