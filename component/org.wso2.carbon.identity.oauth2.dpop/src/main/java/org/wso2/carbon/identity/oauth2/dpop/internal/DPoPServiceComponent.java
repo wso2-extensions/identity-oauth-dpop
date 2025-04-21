@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2024-2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -33,10 +33,12 @@ import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.carbon.identity.oauth.common.token.bindings.TokenBinderInfo;
 import org.wso2.carbon.identity.oauth.event.OAuthEventInterceptor;
 import org.wso2.carbon.identity.oauth2.IntrospectionDataProvider;
+import org.wso2.carbon.identity.oauth2.authzChallenge.event.AuthzChallengeInterceptor;
 import org.wso2.carbon.identity.oauth2.dpop.dao.DPoPTokenManagerDAOImpl;
 import org.wso2.carbon.identity.oauth2.dpop.handler.DPoPAuthenticationHandler;
 import org.wso2.carbon.identity.oauth2.dpop.handler.DPoPEventHandler;
 import org.wso2.carbon.identity.oauth2.dpop.introspection.dataprovider.DPoPIntrospectionDataProvider;
+import org.wso2.carbon.identity.oauth2.dpop.listener.AuthzChallengeDPoPInterceptorHandlerProxy;
 import org.wso2.carbon.identity.oauth2.dpop.listener.OauthDPoPInterceptorHandlerProxy;
 import org.wso2.carbon.identity.oauth2.dpop.token.binder.DPoPBasedTokenBinder;
 import org.wso2.carbon.identity.oauth2.dpop.validators.DPoPHeaderValidator;
@@ -80,6 +82,8 @@ public class DPoPServiceComponent {
                     new DPoPTokenValidator(), null);
             context.getBundleContext().registerService(AbstractEventHandler.class.getName(),
                     new DPoPEventHandler(), null);
+            context.getBundleContext().registerService(AuthzChallengeInterceptor.class.getName(),
+                    new AuthzChallengeDPoPInterceptorHandlerProxy(new DPoPHeaderValidator()), null);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("DPoPService is activated.");
             }
@@ -92,7 +96,7 @@ public class DPoPServiceComponent {
         /* reference IdentityCoreInitializedEvent service to guarantee that this component will wait until identity core
          is started */
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Unset Identity core Intialized Event Service.");
+            LOG.debug("Unset Identity core Initialized Event Service.");
         }
     }
 
@@ -107,7 +111,7 @@ public class DPoPServiceComponent {
         /* reference IdentityCoreInitializedEvent service to guarantee that this component will wait until identity core
          is started */
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Set Identity core Intialized Event Service.");
+            LOG.debug("Set Identity core Initialized Event Service.");
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2024-2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -75,17 +75,24 @@ public class DPoPHeaderValidator {
     public String getDPoPHeader(OAuthTokenReqMessageContext tokReqMsgCtx) throws IdentityOAuth2ClientException {
 
         HttpRequestHeader[] httpRequestHeaders = tokReqMsgCtx.getOauth2AccessTokenReqDTO().getHttpRequestHeaders();
+        return extractDPoPHeader(httpRequestHeaders);
+    }
+
+    public String extractDPoPHeader(HttpRequestHeader[] httpRequestHeaders) throws IdentityOAuth2ClientException {
+
         if (httpRequestHeaders != null) {
             for (HttpRequestHeader header : httpRequestHeaders) {
                 if (header != null && DPoPConstants.OAUTH_DPOP_HEADER.equalsIgnoreCase(header.getName())) {
-                    if (ArrayUtils.isNotEmpty(header.getValue())) {
-                        if (header.getValue().length > 1) {
+                    String[] values = header.getValue();
+
+                    if (ArrayUtils.isNotEmpty(values)) {
+                        if (values.length > 1) {
                             String error = "Exception occurred while extracting the DPoP proof header: " +
                                     "Request contains multiple DPoP headers.";
                             LOG.error(error);
                             throw new IdentityOAuth2ClientException(DPoPConstants.INVALID_DPOP_PROOF, error);
                         }
-                        return header.getValue()[0];
+                        return values[0];
                     }
                     return null;
                 }
