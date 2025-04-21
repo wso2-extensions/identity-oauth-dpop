@@ -19,12 +19,14 @@
 package org.wso2.carbon.identity.oauth2.dpop.dao;
 
 import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
+import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
 import org.wso2.carbon.identity.common.testng.WithCarbonHome;
 import org.wso2.carbon.identity.common.testng.WithH2Database;
 import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
@@ -33,6 +35,7 @@ import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
 import org.wso2.carbon.identity.oauth2.dpop.util.Utils;
 import org.wso2.carbon.identity.oauth2.token.bindings.TokenBinding;
 
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 
@@ -111,4 +114,20 @@ public class DPoPTokenManagerDAOImplTest {
 
         dao.getTokenBindingUsingHash(null);
     }
+
+    @Test(expectedExceptions = IdentityOAuth2Exception.class)
+    public void testGetTokenBindingUsingHashWithSQLException() throws Exception {
+
+        try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
+
+            JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
+            utilsMock.when(Utils::getNewTemplate).thenReturn(jdbcTemplate);
+
+            doThrow(new DataAccessException("Simulated SQL exception"))
+                    .when(jdbcTemplate).executeQuery(Mockito.anyString(), Mockito.any(), Mockito.any());
+            dao.getTokenBindingUsingHash(TEST_REFRESH_TOKEN);
+        }
+    }
+
+
 }

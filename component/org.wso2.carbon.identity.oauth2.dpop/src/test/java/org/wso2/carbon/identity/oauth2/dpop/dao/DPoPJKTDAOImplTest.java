@@ -18,12 +18,22 @@
 
 package org.wso2.carbon.identity.oauth2.dpop.dao;
 
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.carbon.identity.common.testng.WithCarbonHome;
 import org.wso2.carbon.identity.common.testng.WithH2Database;
+import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
+
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+import static org.mockito.Mockito.when;
 
  /**
  * Test class for {@link DPoPJKTDAOImpl}.
@@ -79,4 +89,55 @@ public class DPoPJKTDAOImplTest {
         String result = dao.getDPoPJKTFromAuthzCode("unknownCode");
         Assert.assertNull(result, "Expected null for unknown authorization code");
     }
+
+    @Test(expectedExceptions = IdentityOAuth2Exception.class)
+    public void testInsertDPoPJKTWithSQLException() throws Exception {
+
+        try (MockedStatic<IdentityDatabaseUtil> ignored = mockStaticDBUtils("execute",
+                new SQLException("Simulated SQL exception"))) {
+
+            dao.insertDPoPJKT(CONSUMER_KEY, CODE_ID, DPOP_JKT);
+        }
+    }
+
+    @Test(expectedExceptions = IdentityOAuth2Exception.class)
+    public void testGetDPoPJKTFromAuthzCodeWithSQLException() throws Exception {
+
+        try (MockedStatic<IdentityDatabaseUtil> ignored = mockStaticDBUtils("executeQuery",
+                new SQLException("Simulated SQL exception"))) {
+
+            dao.getDPoPJKTFromAuthzCode(AUTHZ_CODE);
+        }
+    }
+
+    @Test(expectedExceptions = IdentityOAuth2Exception.class)
+    public void testGetAuthzCodeFromCodeIdWithSQLException() throws Exception {
+
+        try (MockedStatic<IdentityDatabaseUtil> ignored = mockStaticDBUtils("executeQuery",
+                new SQLException("Simulated SQL exception"))) {
+
+            dao.getAuthzCodeFromCodeId(CODE_ID);
+        }
+    }
+
+     private MockedStatic<IdentityDatabaseUtil> mockStaticDBUtils(String method, SQLException exceptionToThrow)
+             throws SQLException {
+
+         Connection mockConnection = Mockito.mock(Connection.class);
+         PreparedStatement mockPreparedStatement = Mockito.mock(PreparedStatement.class);
+
+         when(mockConnection.prepareStatement(Mockito.anyString())).thenReturn(mockPreparedStatement);
+
+         if ("execute".equals(method)) {
+             Mockito.doThrow(exceptionToThrow).when(mockPreparedStatement).execute();
+         } else if ("executeQuery".equals(method)) {
+             Mockito.doThrow(exceptionToThrow).when(mockPreparedStatement).executeQuery();
+         }
+
+         MockedStatic<IdentityDatabaseUtil> mockedDbUtil = Mockito.mockStatic(IdentityDatabaseUtil.class);
+         mockedDbUtil.when(() ->
+                 IdentityDatabaseUtil.getDBConnection(false)).thenReturn(mockConnection);
+
+         return mockedDbUtil;
+     }
 }
