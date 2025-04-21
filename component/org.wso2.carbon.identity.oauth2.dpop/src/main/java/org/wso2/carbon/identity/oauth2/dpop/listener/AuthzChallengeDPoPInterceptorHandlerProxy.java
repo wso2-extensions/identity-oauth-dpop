@@ -39,6 +39,7 @@ public class AuthzChallengeDPoPInterceptorHandlerProxy extends AbstractIdentityH
     private final DPoPHeaderValidator dPoPHeaderValidator;
 
     public AuthzChallengeDPoPInterceptorHandlerProxy(DPoPHeaderValidator dPoPHeaderValidator) {
+
         this.dPoPHeaderValidator = dPoPHeaderValidator;
     }
 
@@ -51,6 +52,7 @@ public class AuthzChallengeDPoPInterceptorHandlerProxy extends AbstractIdentityH
      */
     @Override
     public String handleAuthzChallengeReq(OAuth2AuthzChallengeReqDTO requestDTO) throws IdentityOAuth2Exception {
+
         try {
             String dPoPProof = dPoPHeaderValidator.extractDPoPHeader(requestDTO.getHttpRequestHeaders());
 
