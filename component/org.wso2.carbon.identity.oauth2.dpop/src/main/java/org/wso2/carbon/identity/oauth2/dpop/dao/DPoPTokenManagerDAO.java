@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2024-2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -33,5 +33,5 @@ public interface DPoPTokenManagerDAO {
      * @return TokenBinding from the refresh token.
      * @throws IdentityOAuth2Exception If an error occurs while retrieving the binding type.
      */
-    TokenBinding getTokenBinding(String refreshToken, boolean isHashedToken) throws IdentityOAuth2Exception;
+    TokenBinding getTokenBindingUsingHash(String refreshToken) throws IdentityOAuth2Exception;
 }

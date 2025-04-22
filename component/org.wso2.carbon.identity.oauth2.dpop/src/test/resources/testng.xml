@@ -25,6 +25,8 @@
         <classes>
             <class name="org.wso2.carbon.identity.oauth2.dpop.util.UtilsTest"/>
             <class name="org.wso2.carbon.identity.oauth2.dpop.validators.DPoPHeaderValidatorTest"/>
+            <class name="org.wso2.carbon.identity.oauth2.dpop.dao.DPoPJKTDAOImplTest"/>
+            <class name="org.wso2.carbon.identity.oauth2.dpop.dao.DPoPTokenManagerDAOImplTest"/>
             <class name="org.wso2.carbon.identity.oauth2.dpop.dao.JWTStorageManagerTest"/>
             <class name="org.wso2.carbon.identity.oauth2.dpop.cache.DPoPJTICacheTest"/>
         </classes>
