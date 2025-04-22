@@ -35,7 +35,7 @@ public class DPoPJTICacheTest {
     private DPoPJTICacheKey jtiCacheKey;
 
     @BeforeClass
-    public void setUp() throws Exception {
+    public void setUp() {
 
         dPoPJTICache = DPoPJTICache.getInstance();
 
@@ -44,20 +44,20 @@ public class DPoPJTICacheTest {
     }
 
     @Test
-    public void testAddToCache() throws Exception {
+    public void testAddToCache() {
 
         dPoPJTICache.addToCache(jtiCacheKey, jtiCacheEntry);
 
     }
 
     @Test(dependsOnMethods = {"testAddToCache"})
-    public void testGetValueFromCache() throws Exception {
+    public void testGetValueFromCache() {
 
         assertEquals(dPoPJTICache.getValueFromCache(jtiCacheKey), jtiCacheEntry);
     }
 
     @Test(dependsOnMethods = {"testGetValueFromCache"})
-    public void testClearCacheEntry() throws Exception {
+    public void testClearCacheEntry() {
 
         dPoPJTICache.clearCacheEntry(jtiCacheKey);
         assertNull(dPoPJTICache.getValueFromCache(jtiCacheKey));

@@ -82,7 +82,6 @@ public class JWTStorageManagerTest {
 
         List<JWTEntry> results = jwtStorageManager.getJwtsFromDB("jti", 1);
         assertTrue(results.isEmpty(), "Expected empty result set");
-
     }
 
     @Test(priority = 2)
