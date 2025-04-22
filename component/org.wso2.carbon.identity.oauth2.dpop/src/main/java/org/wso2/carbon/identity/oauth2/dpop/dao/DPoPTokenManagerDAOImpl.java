@@ -38,6 +38,10 @@ public class DPoPTokenManagerDAOImpl implements DPoPTokenManagerDAO {
     public TokenBinding getTokenBindingUsingHash(String refreshToken)
             throws IdentityOAuth2Exception {
 
+        if (refreshToken == null) {
+            throw new IdentityOAuth2Exception("Refresh token cannot be null.");
+        }
+
         JdbcTemplate jdbcTemplate = Utils.getNewTemplate();
 
         TokenPersistenceProcessor hashingPersistenceProcessor = new HashingPersistenceProcessor();

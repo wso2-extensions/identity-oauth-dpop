@@ -32,6 +32,8 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+import org.wso2.carbon.identity.common.testng.WithAxisConfiguration;
+import org.wso2.carbon.identity.common.testng.WithCarbonHome;
 import org.wso2.carbon.identity.core.model.IdentityEventListenerConfig;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.oauth.config.OAuthServerConfiguration;
@@ -72,6 +74,8 @@ import static org.wso2.carbon.identity.oauth2.dpop.util.DPoPTestConstants.DUMMY_
 import static org.wso2.carbon.identity.oauth2.dpop.util.DPoPTestConstants.DUMMY_JTI;
 import static org.wso2.carbon.identity.oauth2.dpop.util.DPoPTestConstants.DUMMY_TOKEN_BINDING_TYPE;
 
+@WithCarbonHome
+@WithAxisConfiguration
 public class DPoPHeaderValidatorTest {
 
     private OAuthTokenReqMessageContext tokReqMsgCtx;

@@ -55,7 +55,7 @@ public class OauthDPoPInterceptorHandlerProxy extends AbstractOAuthEventIntercep
         this.dPoPHeaderValidator = dPoPHeaderValidator;
     }
 
-    /**
+    /**.
      * {@inheritdoc}
      */
     @Override
@@ -93,7 +93,7 @@ public class OauthDPoPInterceptorHandlerProxy extends AbstractOAuthEventIntercep
         }
     }
 
-    /**
+    /**.
      * {@inheritdoc}
      */
     @Override
@@ -160,7 +160,7 @@ public class OauthDPoPInterceptorHandlerProxy extends AbstractOAuthEventIntercep
         return identityEventListenerConfig != null && Boolean.parseBoolean(identityEventListenerConfig.getEnable());
     }
 
-    /**
+    /**.
      * {@inheritdoc}
      */
     @Override
@@ -170,7 +170,7 @@ public class OauthDPoPInterceptorHandlerProxy extends AbstractOAuthEventIntercep
         setDPoPTokenType(tokReqMsgCtx, tokenRespDTO);
     }
 
-    /**
+    /**.
      * {@inheritdoc}
      */
     @Override

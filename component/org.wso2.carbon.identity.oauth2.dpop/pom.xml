@@ -22,7 +22,7 @@
     <parent>
         <artifactId>identity-oauth-dpop</artifactId>
         <groupId>org.wso2.carbon.extension.identity.oauth.dpop</groupId>
-        <version>1.0.16-SNAPSHOT</version>
+        <version>1.0.17-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -101,8 +101,18 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
+            <artifactId>org.wso2.carbon.identity.testutil</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-inline</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
