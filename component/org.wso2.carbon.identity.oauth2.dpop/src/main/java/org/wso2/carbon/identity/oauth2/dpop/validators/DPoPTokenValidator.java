@@ -357,7 +357,7 @@ public class DPoPTokenValidator implements OAuth2TokenValidator {
         return false;
     }
 
-    /**
+    /**.
      * Extract the passed parameter value from the access token validation request message
      *
      * @param messageContext Message context of the token validation request
