@@ -23,10 +23,10 @@ package org.wso2.carbon.identity.oauth2.dpop.dao;
  */
 public class SQLQueries {
 
-    public static final String RETRIEVE_TOKEN_BINDING_BY_REFRESH_TOKEN_HASH =
+    public static final String RETRIEVE_TOKEN_BINDING_BY_REFRESH_TOKEN =
             "SELECT BINDING.TOKEN_BINDING_TYPE,BINDING.TOKEN_BINDING_VALUE,BINDING.TOKEN_BINDING_REF " +
                     "FROM IDN_OAUTH2_ACCESS_TOKEN TOKEN LEFT JOIN IDN_OAUTH2_TOKEN_BINDING BINDING ON " +
-                    "TOKEN.TOKEN_ID=BINDING.TOKEN_ID WHERE TOKEN.REFRESH_TOKEN_HASH = ? " +
+                    "TOKEN.TOKEN_ID=BINDING.TOKEN_ID WHERE TOKEN.REFRESH_TOKEN = ? " +
                     "AND BINDING.TOKEN_BINDING_TYPE = ?";
 
     public static final String RETRIEVE_AUTHORIZATION_CODE_BY_CODE_ID =

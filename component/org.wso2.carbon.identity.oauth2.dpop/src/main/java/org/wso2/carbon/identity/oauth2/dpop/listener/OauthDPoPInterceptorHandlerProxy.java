@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -36,6 +36,7 @@ import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenReqDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenRespDTO;
 import org.wso2.carbon.identity.oauth2.token.OAuthTokenReqMessageContext;
 import org.wso2.carbon.identity.oauth2.token.bindings.TokenBinding;
+import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
 
 import java.util.Map;
 
@@ -107,8 +108,8 @@ public class OauthDPoPInterceptorHandlerProxy extends AbstractOAuthEventIntercep
         }
         try {
             String tokenBindingType = dPoPHeaderValidator.getApplicationBindingType(tokenReqDTO.getClientId());
-            TokenBinding tokenBinding = tokenBindingTypeManagerDao
-                    .getTokenBindingUsingHash(tokenReqDTO.getRefreshToken());
+            TokenBinding tokenBinding = tokenBindingTypeManagerDao.getTokenBinding(tokenReqDTO.getRefreshToken(),
+                            OAuth2Util.isHashEnabled());
             if (tokenBinding != null) {
                 if (!DPoPConstants.DPOP_TOKEN_TYPE.equals(tokenBindingType)) {
                     if (LOG.isDebugEnabled()) {
