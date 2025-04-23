@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -32,6 +32,8 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+import org.wso2.carbon.identity.common.testng.WithAxisConfiguration;
+import org.wso2.carbon.identity.common.testng.WithCarbonHome;
 import org.wso2.carbon.identity.core.model.IdentityEventListenerConfig;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.oauth.config.OAuthServerConfiguration;
@@ -72,16 +74,13 @@ import static org.wso2.carbon.identity.oauth2.dpop.util.DPoPTestConstants.DUMMY_
 import static org.wso2.carbon.identity.oauth2.dpop.util.DPoPTestConstants.DUMMY_JTI;
 import static org.wso2.carbon.identity.oauth2.dpop.util.DPoPTestConstants.DUMMY_TOKEN_BINDING_TYPE;
 
+@WithCarbonHome
+@WithAxisConfiguration
 public class DPoPHeaderValidatorTest {
 
-    @Mock
     private OAuthTokenReqMessageContext tokReqMsgCtx;
 
-    @Mock
     private OAuth2AccessTokenReqDTO oAuth2AccessTokenReqDTO;
-
-    @Mock
-    private HttpServletRequestWrapper httpServletRequest;
 
     @Mock
     private Properties properties;
@@ -119,6 +118,8 @@ public class DPoPHeaderValidatorTest {
         mockIdentityUtil.when(() -> IdentityUtil.readEventListenerProperty(anyString(), anyString()))
                 .thenReturn(identityEventListenerConfig);
         when(identityEventListenerConfig.getProperties()).thenReturn(properties);
+        oAuth2AccessTokenReqDTO = new OAuth2AccessTokenReqDTO();
+        tokReqMsgCtx = createTokenReqMessageContext();
     }
 
     @AfterMethod
@@ -144,8 +145,7 @@ public class DPoPHeaderValidatorTest {
     public void testGetDPoPHeader(Object httpRequestHeaders, String expectedResult) {
 
         try {
-            when(tokReqMsgCtx.getOauth2AccessTokenReqDTO()).thenReturn(oAuth2AccessTokenReqDTO);
-            when(oAuth2AccessTokenReqDTO.getHttpRequestHeaders()).thenReturn((HttpRequestHeader[]) httpRequestHeaders);
+            oAuth2AccessTokenReqDTO.setHttpRequestHeaders((HttpRequestHeader[]) httpRequestHeaders);
             String dPoPHeader = dPoPHeaderValidator.getDPoPHeader(tokReqMsgCtx);
             assertEquals(dPoPHeader, expectedResult);
         } catch (IdentityOAuth2ClientException e) {
@@ -314,15 +314,26 @@ public class DPoPHeaderValidatorTest {
 
     @Test(dataProvider = "isValidDPoPTestData")
     public void testIsValidDPoP(String dPoPProof) {
-
-        when(oAuth2AccessTokenReqDTO.getHttpServletRequestWrapper()).thenReturn(httpServletRequest);
-        when(httpServletRequest.getMethod()).thenReturn(DUMMY_HTTP_METHOD);
-        when(httpServletRequest.getRequestURL()).thenReturn(new StringBuffer(DUMMY_HTTP_URL));
+        when(OAuth2Util.buildServiceUrl(DUMMY_HTTP_URL, null, null))
+                .thenReturn(DUMMY_HTTP_URL);
         try {
             assertTrue(dPoPHeaderValidator.isValidDPoP(dPoPProof, oAuth2AccessTokenReqDTO, tokReqMsgCtx));
         } catch (IdentityOAuth2Exception e) {
             assertEquals(e.getErrorCode(), INVALID_DPOP_PROOF);
             assertEquals(e.getMessage(), INVALID_DPOP_ERROR);
         }
+    }
+
+    private OAuthTokenReqMessageContext createTokenReqMessageContext() {
+
+        OAuthTokenReqMessageContext tokenReqMessageContext =
+                new OAuthTokenReqMessageContext(oAuth2AccessTokenReqDTO);
+
+        HttpServletRequestWrapper httpServletRequestWrapper = mock(HttpServletRequestWrapper.class);
+        when(httpServletRequestWrapper.getMethod()).thenReturn(DUMMY_HTTP_METHOD);
+        when(httpServletRequestWrapper.getRequestURI()).thenReturn(DUMMY_HTTP_URL);
+        oAuth2AccessTokenReqDTO.setHttpServletRequestWrapper(httpServletRequestWrapper);
+
+        return tokenReqMessageContext;
     }
 }

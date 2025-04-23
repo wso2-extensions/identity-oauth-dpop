@@ -22,15 +22,15 @@ jobs:
         java-version: [ 11, 17 ]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up Adopt JDK 11 & 17
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v4
         with:
           java-version: ${{ matrix.java-version }}
           distribution: "adopt"
       - name: Cache local Maven repository
         id: cache-maven-m2
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         env:
           cache-name: cache-m2
         with:
@@ -44,4 +44,11 @@ jobs:
         run: mvn clean install -U -B
       - name: Delete SNAPSHOT artifacts
         run: find ~/.m2/repository/ -name "*-SNAPSHOT" -type d -print -prune -exec rm -r {} +
-
+      - name: Generate coverage report
+        run: mvn test jacoco:report
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: component/**/target/site/jacoco/jacoco.xml
+          flags: unit

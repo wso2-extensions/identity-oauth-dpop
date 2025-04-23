@@ -28,6 +28,8 @@
             <class name="org.wso2.carbon.identity.oauth2.dpop.token.binder.DPoPBasedTokenBinderTest"/>
             <class name="org.wso2.carbon.identity.oauth2.dpop.cache.DPoPJKTCacheTest"/>
             <class name="org.wso2.carbon.identity.oauth2.dpop.listener.OauthDPoPInterceptorHandlerProxyTest"/>
+            <class name="org.wso2.carbon.identity.oauth2.dpop.dao.DPoPJKTDAOImplTest"/>
+            <class name="org.wso2.carbon.identity.oauth2.dpop.dao.DPoPTokenManagerDAOImplTest"/>
         </classes>
     </test>
 </suite>
