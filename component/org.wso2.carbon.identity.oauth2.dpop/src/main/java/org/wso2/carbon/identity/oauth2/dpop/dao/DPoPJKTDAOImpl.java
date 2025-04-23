@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -50,7 +50,7 @@ public class DPoPJKTDAOImpl implements DPoPJKTDAO {
             LOG.debug("Persisting dpop_jkt: " + DigestUtils.sha256Hex(dpopJkt) + " for client: "
                     + consumerKey);
         }
-        Connection connection = IdentityDatabaseUtil.getDBConnection(false);
+        Connection connection = IdentityDatabaseUtil.getDBConnection();
         PreparedStatement prepStmt = null;
         try {
             String sql = SQLQueries.INSERT_DPOP_JKT;
@@ -59,17 +59,19 @@ public class DPoPJKTDAOImpl implements DPoPJKTDAO {
             prepStmt.setString(2, dpopJkt);
             prepStmt.execute();
         } catch (SQLException e) {
+            IdentityDatabaseUtil.rollbackTransaction(connection);
             throw new IdentityOAuth2Exception("Error when persisting the dpop_jkt for consumer key : "
                     + consumerKey, e);
         } finally {
             IdentityDatabaseUtil.closeAllConnections(connection, null, prepStmt);
         }
+
     }
 
     @Override
     public String getDPoPJKTFromAuthzCode(String authzCode) throws IdentityOAuth2Exception {
 
-        Connection connection = IdentityDatabaseUtil.getDBConnection(false);
+        Connection connection = IdentityDatabaseUtil.getDBConnection();
         PreparedStatement prepStmt = null;
         ResultSet resultSet;
         try {
@@ -85,6 +87,7 @@ public class DPoPJKTDAOImpl implements DPoPJKTDAO {
             }
             return null;
         } catch (SQLException e) {
+            IdentityDatabaseUtil.rollbackTransaction(connection);
             throw new IdentityOAuth2Exception("Error when retrieving dpop_jkt for consumer key : " + authzCode, e);
         } finally {
             IdentityDatabaseUtil.closeAllConnections(connection, null, prepStmt);
@@ -93,7 +96,7 @@ public class DPoPJKTDAOImpl implements DPoPJKTDAO {
 
     @Override
     public String getAuthzCodeFromCodeId(String codeId) throws IdentityOAuth2Exception {
-        Connection connection = IdentityDatabaseUtil.getDBConnection(false);
+        Connection connection = IdentityDatabaseUtil.getDBConnection();
         PreparedStatement prepStmt = null;
         ResultSet resultSet;
         try {
@@ -107,6 +110,7 @@ public class DPoPJKTDAOImpl implements DPoPJKTDAO {
             }
             return null;
         } catch (SQLException e) {
+            IdentityDatabaseUtil.rollbackTransaction(connection);
             throw new IdentityOAuth2Exception("Error when retrieving authorization code for code id : " + codeId, e);
         } finally {
             IdentityDatabaseUtil.closeAllConnections(connection, null, prepStmt);
