@@ -50,6 +50,14 @@ public class JWTStorageManager {
 
     private static final Log log = LogFactory.getLog(JWTStorageManager.class);
 
+    /**
+     * Retrieves a list of JWT entries from the database for a given JWT ID (JTI) and tenant ID.
+     *
+     * @param jti      The JWT ID to search for.
+     * @param tenantId The tenant ID associated with the JWT.
+     * @return A list of {@link JWTEntry} objects containing the JWT details.
+     * @throws IdentityOAuth2Exception If an error occurs while retrieving the JWT entries from the database.
+     */
     public List<JWTEntry> getJwtsFromDB(String jti, int tenantId) throws IdentityOAuth2Exception {
 
         List<JWTEntry> jwtEntries = new ArrayList<>();
@@ -90,6 +98,15 @@ public class JWTStorageManager {
         return jwtEntries;
     }
 
+    /**
+     * Persists a JWT ID (JTI) along with its associated tenant ID, expiration time, and creation time in the database.
+     *
+     * @param jti         The JWT ID to persist.
+     * @param tenantId    The tenant ID associated with the JWT.
+     * @param expTime     The expiration time of the JWT in milliseconds since epoch.
+     * @param timeCreated The creation time of the JWT in milliseconds since epoch.
+     * @throws IdentityOAuth2Exception If an error occurs while storing the JWT ID in the database.
+     */
     public void persistJWTIdInDB(String jti, int tenantId, long expTime, long timeCreated)
             throws IdentityOAuth2Exception {
 

@@ -329,7 +329,7 @@ public class DPoPHeaderValidator {
             throw new IdentityOAuth2ClientException(DPoPConstants.INVALID_DPOP_PROOF, DPoPConstants.INVALID_DPOP_ERROR);
         }
 
-        isJTIReplay(jti, tenantId);
+        validateJTIReplay(jti, tenantId);
         persistJWTID(jti, expTime, issuedTime, tenantId);
 
         return true;
@@ -470,7 +470,14 @@ public class DPoPHeaderValidator {
         return dpopJKTDAO.getDPoPJKTFromAuthzCode(authzCode);
     }
 
-    private boolean isJTIReplay(String jti, int tenantId) throws IdentityOAuth2Exception {
+    /**
+     * Validates if the given JTI (JWT ID) has been replayed.
+     *
+     * @param jti      The JWT ID to validate.
+     * @param tenantId The tenant ID associated with the request.
+     * @throws IdentityOAuth2Exception If the JTI is found to be replayed or any error occurs during validation.
+     */
+    private void validateJTIReplay(String jti, int tenantId) throws IdentityOAuth2Exception {
 
         DPoPJTICache jtiCache = DPoPJTICache.getInstance();
         DPoPJTICacheKey cacheKey = Utils.isTenantIdColumnAvailableInIdnOidcAuth() ?
@@ -489,13 +496,20 @@ public class DPoPHeaderValidator {
                 LOG.debug("JWT id: " + jti + " not found in the Storage. The JWT has been validated successfully.");
             }
             jtiCache.addToCache(cacheKey, new DPoPJTICacheEntry(null));
-            return true;
         } else {
             throw new IdentityOAuth2ClientException(DPoPConstants.INVALID_DPOP_PROOF,
                     DPoPConstants.DPOP_PROOF_REPLAYED);
         }
     }
 
+    /**
+     * Retrieves the JWT entry from the database for the given JTI and tenant ID.
+     *
+     * @param jti      The JWT ID to retrieve.
+     * @param tenantId The tenant ID associated with the request.
+     * @return The JWT entry if found, or null if no entry exists.
+     * @throws IdentityOAuth2Exception If an error occurs while retrieving the JWT entry from the database.
+     */
     private JWTEntry getJTIfromDB(String jti, final int tenantId) throws IdentityOAuth2Exception {
 
         List<JWTEntry> jwtEntries = jwtStorageManager.getJwtsFromDB(jti, tenantId);
@@ -510,6 +524,15 @@ public class DPoPHeaderValidator {
         return jwtEntries.stream().filter(e -> e.getTenantId() == tenantId).findFirst().orElse(null);
     }
 
+    /**
+     * Persists the given JTI (JWT ID) in the database with its associated metadata.
+     *
+     * @param jti        The JWT ID to persist.
+     * @param expTime    The expiration time of the JWT.
+     * @param timeCreated The time the JWT was created.
+     * @param tenantId   The tenant ID associated with the request.
+     * @throws IdentityOAuth2Exception If an error occurs while persisting the JWT ID in the database.
+     */
     private void persistJWTID(String jti, long expTime, long timeCreated, int tenantId)
             throws IdentityOAuth2Exception {
         jwtStorageManager.persistJWTIdInDB(jti, tenantId, expTime, timeCreated);
