@@ -32,6 +32,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.common.testng.WithAxisConfiguration;
 import org.wso2.carbon.identity.common.testng.WithCarbonHome;
 import org.wso2.carbon.identity.core.model.IdentityEventListenerConfig;
@@ -40,20 +41,27 @@ import org.wso2.carbon.identity.oauth.config.OAuthServerConfiguration;
 import org.wso2.carbon.identity.oauth.dao.OAuthAppDO;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2ClientException;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
+import org.wso2.carbon.identity.oauth2.dpop.cache.DPoPJTICache;
+import org.wso2.carbon.identity.oauth2.dpop.cache.DPoPJTICacheKey;
 import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
+import org.wso2.carbon.identity.oauth2.dpop.dao.JWTStorageManager;
 import org.wso2.carbon.identity.oauth2.dpop.util.DPoPProofUtil;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenReqDTO;
 import org.wso2.carbon.identity.oauth2.model.HttpRequestHeader;
 import org.wso2.carbon.identity.oauth2.token.OAuthTokenReqMessageContext;
 import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
 
+import java.lang.reflect.Field;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Properties;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequestWrapper;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -103,6 +111,8 @@ public class DPoPHeaderValidatorTest {
     @Mock
     private JWK mockJWK;
 
+    private MockedStatic<DPoPJTICache> mockedCache;
+
     MockedStatic<IdentityUtil> mockIdentityUtil;
 
     private DPoPHeaderValidator dPoPHeaderValidator;
@@ -110,7 +120,8 @@ public class DPoPHeaderValidatorTest {
     private AutoCloseable closeable;
 
     @BeforeMethod
-    public void setUp() {
+    public void setUp() throws IdentityOAuth2Exception, NoSuchFieldException, IllegalAccessException {
+
 
         closeable = MockitoAnnotations.openMocks(this);
         mockIdentityUtil = mockStatic(IdentityUtil.class);
@@ -118,13 +129,32 @@ public class DPoPHeaderValidatorTest {
         mockIdentityUtil.when(() -> IdentityUtil.readEventListenerProperty(anyString(), anyString()))
                 .thenReturn(identityEventListenerConfig);
         when(identityEventListenerConfig.getProperties()).thenReturn(properties);
+
+        mockedCache = mockStatic(DPoPJTICache.class);
+        DPoPJTICache cacheMock = mock(DPoPJTICache.class);
+        mockedCache.when(DPoPJTICache::getInstance).thenReturn(cacheMock);
+        when(cacheMock.getValueFromCache(any(DPoPJTICacheKey.class))).thenReturn(null);
+
+        JWTStorageManager jwtStorageManager = mock(JWTStorageManager.class);
+        when(jwtStorageManager.getJwtsFromDB(anyString(), anyInt())).thenReturn(new ArrayList<>());
+
+        Field dpopHeaderValidator = DPoPHeaderValidator.class.getDeclaredField("jwtStorageManager");
+        dpopHeaderValidator.setAccessible(true);
+        dpopHeaderValidator.set(this.dPoPHeaderValidator, jwtStorageManager);
+
         oAuth2AccessTokenReqDTO = new OAuth2AccessTokenReqDTO();
         tokReqMsgCtx = createTokenReqMessageContext();
+        PrivilegedCarbonContext.startTenantFlow();
+        PrivilegedCarbonContext carbonContext = PrivilegedCarbonContext.getThreadLocalCarbonContext();
+        carbonContext.setTenantId(-1234);
+        carbonContext.setTenantDomain("carbon.super");
     }
 
     @AfterMethod
     public void tearDown() throws Exception {
         mockIdentityUtil.close();
+        PrivilegedCarbonContext.endTenantFlow();
+        mockedCache.close();
         closeable.close();
     }
 

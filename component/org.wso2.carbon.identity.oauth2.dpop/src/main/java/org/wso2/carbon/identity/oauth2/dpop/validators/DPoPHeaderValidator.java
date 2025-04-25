@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -29,6 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.core.handler.AbstractIdentityHandler;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.oauth.common.exception.InvalidOAuthClientException;
@@ -38,8 +39,13 @@ import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
 import org.wso2.carbon.identity.oauth2.dpop.cache.DPoPJKTCache;
 import org.wso2.carbon.identity.oauth2.dpop.cache.DPoPJKTCacheEntry;
 import org.wso2.carbon.identity.oauth2.dpop.cache.DPoPJKTCacheKey;
+import org.wso2.carbon.identity.oauth2.dpop.cache.DPoPJTICache;
+import org.wso2.carbon.identity.oauth2.dpop.cache.DPoPJTICacheEntry;
+import org.wso2.carbon.identity.oauth2.dpop.cache.DPoPJTICacheKey;
 import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
 import org.wso2.carbon.identity.oauth2.dpop.dao.DPoPJKTDAOImpl;
+import org.wso2.carbon.identity.oauth2.dpop.dao.JWTEntry;
+import org.wso2.carbon.identity.oauth2.dpop.dao.JWTStorageManager;
 import org.wso2.carbon.identity.oauth2.dpop.internal.DPoPDataHolder;
 import org.wso2.carbon.identity.oauth2.dpop.listener.OauthDPoPInterceptorHandlerProxy;
 import org.wso2.carbon.identity.oauth2.dpop.util.Utils;
@@ -56,6 +62,7 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -64,7 +71,13 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class DPoPHeaderValidator {
 
+    private final JWTStorageManager jwtStorageManager;
+
     private static final Log LOG = LogFactory.getLog(DPoPHeaderValidator.class);
+
+    public DPoPHeaderValidator() {
+        this.jwtStorageManager = new JWTStorageManager();
+    }
 
     /**
      * Extract DPoP header from the headers.
@@ -283,7 +296,8 @@ public class DPoPHeaderValidator {
         return true;
     }
 
-    private boolean checkJti(JWTClaimsSet jwtClaimsSet) throws IdentityOAuth2ClientException {
+    private boolean checkJti(JWTClaimsSet jwtClaimsSet)
+            throws IdentityOAuth2Exception {
 
         if (!jwtClaimsSet.getClaims().containsKey(DPoPConstants.JTI)) {
             if (LOG.isDebugEnabled()) {
@@ -291,6 +305,33 @@ public class DPoPHeaderValidator {
             }
             throw new IdentityOAuth2ClientException(DPoPConstants.INVALID_DPOP_PROOF, DPoPConstants.INVALID_DPOP_ERROR);
         }
+
+        PrivilegedCarbonContext carbonContext = PrivilegedCarbonContext.getThreadLocalCarbonContext();
+        int tenantId = carbonContext.getTenantId();
+
+        Date expirationTime = jwtClaimsSet.getExpirationTime();
+        Date issuedAtTime = jwtClaimsSet.getIssueTime();
+
+        long expTime = 0;
+        long issuedTime = 0;
+
+        if (expirationTime != null) {
+            expTime = expirationTime.getTime();
+        }
+        if (issuedAtTime != null) {
+            issuedTime = issuedAtTime.getTime();
+        }
+
+        String jti;
+        try {
+            jti = jwtClaimsSet.getStringClaim(DPoPConstants.JTI);
+        } catch (ParseException e) {
+            throw new IdentityOAuth2ClientException(DPoPConstants.INVALID_DPOP_PROOF, DPoPConstants.INVALID_DPOP_ERROR);
+        }
+
+        validateJTIReplay(jti, tenantId);
+        persistJWTID(jti, expTime, issuedTime, tenantId);
+
         return true;
     }
 
@@ -427,5 +468,73 @@ public class DPoPHeaderValidator {
         }
         DPoPJKTDAOImpl dpopJKTDAO = new DPoPJKTDAOImpl();
         return dpopJKTDAO.getDPoPJKTFromAuthzCode(authzCode);
+    }
+
+    /**
+     * Validates if the given JTI (JWT ID) has been replayed.
+     *
+     * @param jti      The JWT ID to validate.
+     * @param tenantId The tenant ID associated with the request.
+     * @throws IdentityOAuth2Exception If the JTI is found to be replayed or any error occurs during validation.
+     */
+    private void validateJTIReplay(String jti, int tenantId) throws IdentityOAuth2Exception {
+
+        DPoPJTICache jtiCache = DPoPJTICache.getInstance();
+        DPoPJTICacheKey cacheKey = Utils.isTenantIdColumnAvailableInIdnOidcAuth() ?
+                new DPoPJTICacheKey(jti, tenantId) : new DPoPJTICacheKey(jti);
+        DPoPJTICacheEntry cacheEntry = jtiCache.getValueFromCache(cacheKey);
+
+        if (cacheEntry != null) {
+
+            throw new IdentityOAuth2ClientException(DPoPConstants.INVALID_DPOP_PROOF,
+                    DPoPConstants.DPOP_PROOF_REPLAYED);
+        }
+
+        JWTEntry jwtEntry = getJTIfromDB(jti, tenantId);
+        if (jwtEntry == null) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("JWT id: " + jti + " not found in the Storage. The JWT has been validated successfully.");
+            }
+            jtiCache.addToCache(cacheKey, new DPoPJTICacheEntry(null));
+        } else {
+            throw new IdentityOAuth2ClientException(DPoPConstants.INVALID_DPOP_PROOF,
+                    DPoPConstants.DPOP_PROOF_REPLAYED);
+        }
+    }
+
+    /**
+     * Retrieves the JWT entry from the database for the given JTI and tenant ID.
+     *
+     * @param jti      The JWT ID to retrieve.
+     * @param tenantId The tenant ID associated with the request.
+     * @return The JWT entry if found, or null if no entry exists.
+     * @throws IdentityOAuth2Exception If an error occurs while retrieving the JWT entry from the database.
+     */
+    private JWTEntry getJTIfromDB(String jti, final int tenantId) throws IdentityOAuth2Exception {
+
+        List<JWTEntry> jwtEntries = jwtStorageManager.getJwtsFromDB(jti, tenantId);
+
+        if (jwtEntries.isEmpty()) {
+            return null;
+        }
+        // If there is only one entry return it.
+        if (jwtEntries.size() == 1) {
+            return jwtEntries.get(0);
+        }
+        return jwtEntries.stream().filter(e -> e.getTenantId() == tenantId).findFirst().orElse(null);
+    }
+
+    /**
+     * Persists the given JTI (JWT ID) in the database with its associated metadata.
+     *
+     * @param jti        The JWT ID to persist.
+     * @param expTime    The expiration time of the JWT.
+     * @param timeCreated The time the JWT was created.
+     * @param tenantId   The tenant ID associated with the request.
+     * @throws IdentityOAuth2Exception If an error occurs while persisting the JWT ID in the database.
+     */
+    private void persistJWTID(String jti, long expTime, long timeCreated, int tenantId)
+            throws IdentityOAuth2Exception {
+        jwtStorageManager.persistJWTIdInDB(jti, tenantId, expTime, timeCreated);
     }
 }
