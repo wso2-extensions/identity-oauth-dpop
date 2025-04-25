@@ -33,7 +33,7 @@ import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.carbon.identity.oauth.common.token.bindings.TokenBinderInfo;
 import org.wso2.carbon.identity.oauth.event.OAuthEventInterceptor;
 import org.wso2.carbon.identity.oauth2.IntrospectionDataProvider;
-import org.wso2.carbon.identity.oauth2.authzChallenge.event.AuthzChallengeInterceptor;
+import org.wso2.carbon.identity.oauth2.authzchallenge.event.AuthzChallengeInterceptor;
 import org.wso2.carbon.identity.oauth2.dpop.dao.DPoPTokenManagerDAOImpl;
 import org.wso2.carbon.identity.oauth2.dpop.handler.DPoPAuthenticationHandler;
 import org.wso2.carbon.identity.oauth2.dpop.handler.DPoPEventHandler;
