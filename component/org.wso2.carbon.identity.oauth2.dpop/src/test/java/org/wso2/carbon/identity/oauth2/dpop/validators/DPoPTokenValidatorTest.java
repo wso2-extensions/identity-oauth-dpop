@@ -41,6 +41,9 @@ import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.wso2.carbon.base.MultitenantConstants.SUPER_TENANT_DOMAIN_NAME;
 
+/**
+ * Test class for DPoPTokenValidator.
+ */
 public class DPoPTokenValidatorTest {
 
     private static final String SAMPLE_ENCODED_CERT =
