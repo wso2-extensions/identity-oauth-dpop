@@ -46,7 +46,6 @@ import org.wso2.carbon.idp.mgt.IdentityProviderManager;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import java.security.PublicKey;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
@@ -168,21 +167,7 @@ public class DPoPTokenValidator implements OAuth2TokenValidator {
     protected X509Certificate resolveSignerCertificate(JWSHeader header,
                                                        IdentityProvider idp) throws IdentityOAuth2Exception {
 
-        X509Certificate x509Certificate;
-        String tenantDomain = getTenantDomain();
-        try {
-            if (StringUtils.equals(IdentityApplicationConstants.RESIDENT_IDP_RESERVED_NAME,
-                    idp.getIdentityProviderName())) {
-                x509Certificate = (X509Certificate) OAuth2Util.getCertificate(tenantDomain);
-            } else {
-                x509Certificate =
-                        (X509Certificate) IdentityApplicationManagementUtil.decodeCertificate(idp.getCertificate());
-            }
-        } catch (CertificateException e) {
-            throw new IdentityOAuth2Exception("Error occurred while decoding public certificate of Identity Provider "
-                    + idp.getIdentityProviderName() + " for tenant domain " + tenantDomain, e);
-        }
-        return x509Certificate;
+        return OAuth2Util.resolverSignerCertificate(idp);
     }
 
     private IdentityProvider getResidentIDPForIssuer(String jwtIssuer) throws IdentityOAuth2Exception {
