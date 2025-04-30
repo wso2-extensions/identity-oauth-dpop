@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2024-2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -104,6 +104,8 @@ public class DPoPHeaderValidatorTest {
     private JWK mockJWK;
 
     MockedStatic<IdentityUtil> mockIdentityUtil;
+    MockedStatic<OAuth2Util> oAuth2UtilMockedStatic;
+    MockedStatic<OAuthServerConfiguration> oAuthServerConfigurationMockedStatic;
 
     private DPoPHeaderValidator dPoPHeaderValidator;
 
@@ -120,12 +122,20 @@ public class DPoPHeaderValidatorTest {
         when(identityEventListenerConfig.getProperties()).thenReturn(properties);
         oAuth2AccessTokenReqDTO = new OAuth2AccessTokenReqDTO();
         tokReqMsgCtx = createTokenReqMessageContext();
+        oAuthServerConfigurationMockedStatic = mockStatic(OAuthServerConfiguration.class);
+        oAuthServerConfigurationMockedStatic.when(OAuthServerConfiguration::getInstance)
+                .thenReturn(oAuthServerConfiguration);
+        oAuth2UtilMockedStatic = mockStatic(OAuth2Util.class);
+        oAuth2UtilMockedStatic.when(() -> OAuth2Util.getAppInformationByClientId(anyString()))
+                .thenReturn(mockOAuthAppDO);
     }
 
     @AfterMethod
     public void tearDown() throws Exception {
         mockIdentityUtil.close();
         closeable.close();
+        oAuthServerConfigurationMockedStatic.close();
+        oAuth2UtilMockedStatic.close();
     }
 
     @DataProvider(name = "dpopHeaderProvider")
@@ -157,25 +167,11 @@ public class DPoPHeaderValidatorTest {
     @Test
     public void testGetApplicationBindingType() throws Exception {
 
-        try (MockedStatic<OAuthServerConfiguration> mockOAuthServerConfig
-                     = mockStatic(OAuthServerConfiguration.class)) {
+        when(oAuthServerConfiguration.getTimeStampSkewInSeconds()).thenReturn(3600L);
+        when(mockOAuthAppDO.getTokenBindingType()).thenReturn(DUMMY_TOKEN_BINDING_TYPE);
 
-            OAuthServerConfiguration mockConfig = mock(OAuthServerConfiguration.class);
-            mockOAuthServerConfig.when(OAuthServerConfiguration::getInstance).thenReturn(mockConfig);
-            when(mockConfig.getTimeStampSkewInSeconds()).thenReturn(3600L);
-
-            try (MockedStatic<OAuth2Util> mockOAuth2Util = mockStatic(OAuth2Util.class)) {
-
-                OAuthAppDO mockOAuthAppDO = mock(OAuthAppDO.class);
-                mockOAuth2Util.when(() -> OAuth2Util.getAppInformationByClientId(anyString()))
-                        .thenReturn(mockOAuthAppDO);
-                when(mockOAuthAppDO.getTokenBindingType()).thenReturn(DUMMY_TOKEN_BINDING_TYPE);
-
-                String tokenBindingType = dPoPHeaderValidator.getApplicationBindingType(DUMMY_CLIENT_ID);
-
-                assertEquals(tokenBindingType, DUMMY_TOKEN_BINDING_TYPE);
-            }
-        }
+        String tokenBindingType = dPoPHeaderValidator.getApplicationBindingType(DUMMY_CLIENT_ID);
+        assertEquals(tokenBindingType, DUMMY_TOKEN_BINDING_TYPE);
     }
 
     @DataProvider(name = "dpopProofProvider")
