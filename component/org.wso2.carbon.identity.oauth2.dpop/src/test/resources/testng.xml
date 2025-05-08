@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+  ~ Copyright (c) 2024-2025, WSO2 LLC. (http://www.wso2.com).
   ~
   ~ WSO2 LLC. licenses this file to you under the Apache License,
   ~ Version 2.0 (the "License"); you may not use this file except
@@ -28,6 +28,7 @@
             <class name="org.wso2.carbon.identity.oauth2.dpop.token.binder.DPoPBasedTokenBinderTest"/>
             <class name="org.wso2.carbon.identity.oauth2.dpop.cache.DPoPJKTCacheTest"/>
             <class name="org.wso2.carbon.identity.oauth2.dpop.listener.OauthDPoPInterceptorHandlerProxyTest"/>
+            <class name="org.wso2.carbon.identity.oauth2.dpop.validators.DPoPTokenValidatorTest"/>
             <class name="org.wso2.carbon.identity.oauth2.dpop.dao.DPoPJKTDAOImplTest"/>
             <class name="org.wso2.carbon.identity.oauth2.dpop.dao.DPoPTokenManagerDAOImplTest"/>
         </classes>
