@@ -35,6 +35,7 @@
 
     <modules>
         <module>component/org.wso2.carbon.identity.oauth2.dpop</module>
+        <module>feature/org.wso2.carbon.extension.identity.oauth.dpop.server.feature</module>
     </modules>
 
     <scm>
@@ -46,6 +47,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.wso2.carbon.extension.identity.oauth.dpop</groupId>
+                <artifactId>org.wso2.carbon.identity.oauth2.dpop</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.utils</groupId>
                 <artifactId>org.wso2.carbon.database.utils</artifactId>
