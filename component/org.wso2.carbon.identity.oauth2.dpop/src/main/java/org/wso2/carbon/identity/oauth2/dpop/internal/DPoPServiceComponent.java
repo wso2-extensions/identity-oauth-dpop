@@ -27,8 +27,11 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.wso2.carbon.identity.auth.service.handler.AuthenticationHandler;
+import org.wso2.carbon.identity.core.handler.AbstractIdentityHandler;
+import org.wso2.carbon.identity.core.model.IdentityEventListenerConfig;
 import org.wso2.carbon.identity.core.util.IdentityCoreInitializedEvent;
 import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
+import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.carbon.identity.oauth.common.token.bindings.TokenBinderInfo;
 import org.wso2.carbon.identity.oauth.event.OAuthEventInterceptor;
@@ -60,28 +63,35 @@ public class DPoPServiceComponent {
     protected void activate(ComponentContext context) {
 
         try {
-            boolean isAvailableTable = IdentityDatabaseUtil.isTableExists(DPOP_JKT_TABLE_NAME);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(DPOP_JKT_TABLE_NAME + " table is " + (isAvailableTable ? " " : "not ") + "available" +
-                        "Setting isDPoPJKTTableEnabled to " + isAvailableTable);
-            }
-            DPoPDataHolder.setDPoPJKTTableEnabled(isAvailableTable);
+            IdentityEventListenerConfig identityEventListenerConfig = IdentityUtil.readEventListenerProperty
+                    (AbstractIdentityHandler.class.getName(), OauthDPoPInterceptorHandlerProxy.class.getName());
+            boolean enabled = identityEventListenerConfig != null
+                    && Boolean.parseBoolean(identityEventListenerConfig.getEnable());
 
-            DPoPDataHolder.getInstance().setTokenBindingTypeManagerDao(new DPoPTokenManagerDAOImpl());
-            context.getBundleContext().registerService(TokenBinderInfo.class.getName(),
-                    new DPoPBasedTokenBinder(), null);
-            context.getBundleContext().registerService(OAuthEventInterceptor.class,
-                    new OauthDPoPInterceptorHandlerProxy(new DPoPHeaderValidator()), null);
-            context.getBundleContext().registerService(AuthenticationHandler.class.getName(),
-                    new DPoPAuthenticationHandler(), null);
-            context.getBundleContext().registerService(IntrospectionDataProvider.class.getName(),
-                    new DPoPIntrospectionDataProvider(), null);
-            context.getBundleContext().registerService(OAuth2TokenValidator.class.getName(),
-                    new DPoPTokenValidator(), null);
-            context.getBundleContext().registerService(AbstractEventHandler.class.getName(),
-                    new DPoPEventHandler(), null);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("DPoPService is activated.");
+            if (enabled) {
+                boolean isAvailableTable = IdentityDatabaseUtil.isTableExists(DPOP_JKT_TABLE_NAME);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(DPOP_JKT_TABLE_NAME + " table is " + (isAvailableTable ? " " : "not ") + "available" +
+                            "Setting isDPoPJKTTableEnabled to " + isAvailableTable);
+                }
+                DPoPDataHolder.setDPoPJKTTableEnabled(isAvailableTable);
+
+                DPoPDataHolder.getInstance().setTokenBindingTypeManagerDao(new DPoPTokenManagerDAOImpl());
+                context.getBundleContext().registerService(TokenBinderInfo.class.getName(),
+                        new DPoPBasedTokenBinder(), null);
+                context.getBundleContext().registerService(OAuthEventInterceptor.class,
+                        new OauthDPoPInterceptorHandlerProxy(new DPoPHeaderValidator()), null);
+                context.getBundleContext().registerService(AuthenticationHandler.class.getName(),
+                        new DPoPAuthenticationHandler(), null);
+                context.getBundleContext().registerService(IntrospectionDataProvider.class.getName(),
+                        new DPoPIntrospectionDataProvider(), null);
+                context.getBundleContext().registerService(OAuth2TokenValidator.class.getName(),
+                        new DPoPTokenValidator(), null);
+                context.getBundleContext().registerService(AbstractEventHandler.class.getName(),
+                        new DPoPEventHandler(), null);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("DPoPService is activated.");
+                }
             }
         } catch (Throwable e) {
             LOG.error("Error occurred while activating DPoPServiceComponent.", e);
