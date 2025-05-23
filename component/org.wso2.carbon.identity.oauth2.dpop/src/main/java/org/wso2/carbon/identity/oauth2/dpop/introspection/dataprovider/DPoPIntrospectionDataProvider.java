@@ -18,11 +18,13 @@
 
 package org.wso2.carbon.identity.oauth2.dpop.introspection.dataprovider;
 
+import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONObject;
 import org.wso2.carbon.identity.core.handler.AbstractIdentityHandler;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
 import org.wso2.carbon.identity.oauth2.IntrospectionDataProvider;
 import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
+import org.wso2.carbon.identity.oauth2.dpop.internal.DPoPDataHolder;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2IntrospectionResponseDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2TokenValidationRequestDTO;
 import org.wso2.carbon.identity.oauth2.model.AccessTokenDO;
@@ -36,6 +38,8 @@ import java.util.Map;
  */
 public class DPoPIntrospectionDataProvider extends AbstractIdentityHandler implements IntrospectionDataProvider {
 
+    private static final String TOKEN_TYPE = "Refresh";
+
     @Override
     public Map<String, Object> getIntrospectionData(OAuth2TokenValidationRequestDTO oAuth2TokenValidationRequestDTO,
                                                     OAuth2IntrospectionResponseDTO oAuth2IntrospectionResponseDTO)
@@ -45,15 +49,23 @@ public class DPoPIntrospectionDataProvider extends AbstractIdentityHandler imple
         AccessTokenDO accessTokenDO;
 
         if (isEnabled()) {
-            accessTokenDO = OAuth2Util.findAccessToken(oAuth2TokenValidationRequestDTO.
-                    getAccessToken().getIdentifier(), false);
-            if (accessTokenDO.getTokenBinding() != null &&
+
+           if (StringUtils.equals(TOKEN_TYPE, oAuth2IntrospectionResponseDTO.getTokenType())) {
+               accessTokenDO = DPoPDataHolder.getInstance().getTokenProvider().
+                       getVerifiedRefreshToken(oAuth2TokenValidationRequestDTO.getAccessToken().getIdentifier());
+           } else {
+               accessTokenDO = OAuth2Util
+                       .findAccessToken(oAuth2TokenValidationRequestDTO.getAccessToken()
+                               .getIdentifier(), false);
+           }
+
+           if (accessTokenDO.getTokenBinding() != null &&
                     DPoPConstants.DPOP_TOKEN_TYPE.equals(accessTokenDO.getTokenBinding().getBindingType())) {
                 introspectionData.put(DPoPConstants.TOKEN_TYPE, (DPoPConstants.DPOP_TOKEN_TYPE));
                 JSONObject cnf = new JSONObject();
                 cnf.put(DPoPConstants.JWK_THUMBPRINT, accessTokenDO.getTokenBinding().getBindingValue());
                 introspectionData.put(DPoPConstants.CNF, cnf);
-            }
+           }
         }
         return introspectionData;
     }

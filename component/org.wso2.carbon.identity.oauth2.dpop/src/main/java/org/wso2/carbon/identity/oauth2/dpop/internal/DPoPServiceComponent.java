@@ -35,6 +35,7 @@ import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.carbon.identity.oauth.common.token.bindings.TokenBinderInfo;
 import org.wso2.carbon.identity.oauth.event.OAuthEventInterceptor;
+import org.wso2.carbon.identity.oauth.tokenprocessor.TokenProvider;
 import org.wso2.carbon.identity.oauth2.IntrospectionDataProvider;
 import org.wso2.carbon.identity.oauth2.dpop.dao.DPoPTokenManagerDAOImpl;
 import org.wso2.carbon.identity.oauth2.dpop.handler.DPoPAuthenticationHandler;
@@ -58,6 +59,7 @@ import static org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants.DPOP_J
 public class DPoPServiceComponent {
 
     private static final Log LOG = LogFactory.getLog(DPoPServiceComponent.class);
+    private TokenProvider tokenProvider;
 
     @Activate
     protected void activate(ComponentContext context) {
@@ -119,5 +121,28 @@ public class DPoPServiceComponent {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Set Identity core Intialized Event Service.");
         }
+    }
+
+    @Reference(
+            name = "token.provider",
+            service = TokenProvider.class,
+            cardinality = ReferenceCardinality.OPTIONAL,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetTokenProvider"
+    )
+    protected void setTokenProvider(TokenProvider tokenProvider) {
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Setting token provider.");
+        }
+        DPoPDataHolder.getInstance().setTokenProvider(tokenProvider);
+    }
+
+    protected void unsetTokenProvider(TokenProvider tokenProvider) {
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Unsetting token provider.");
+        }
+        DPoPDataHolder.getInstance().setTokenProvider(null);
     }
 }

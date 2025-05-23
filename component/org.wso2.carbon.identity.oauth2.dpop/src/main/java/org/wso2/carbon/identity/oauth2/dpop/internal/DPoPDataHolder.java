@@ -18,6 +18,8 @@
 
 package org.wso2.carbon.identity.oauth2.dpop.internal;
 
+import org.wso2.carbon.identity.oauth.tokenprocessor.DefaultTokenProvider;
+import org.wso2.carbon.identity.oauth.tokenprocessor.TokenProvider;
 import org.wso2.carbon.identity.oauth2.dpop.dao.DPoPTokenManagerDAO;
 
 /**
@@ -28,6 +30,7 @@ public class DPoPDataHolder {
     private static final DPoPDataHolder dPoPDataHolder = new DPoPDataHolder();
     private DPoPTokenManagerDAO tokenBindingTypeManagerDao;
     private static boolean isDPoPJKTTableEnabled = false;
+    private TokenProvider tokenProvider;
 
     public static DPoPDataHolder getInstance() {
 
@@ -68,5 +71,28 @@ public class DPoPDataHolder {
     public static void setDPoPJKTTableEnabled(boolean isDPoPJKTTableEnabled) {
 
         DPoPDataHolder.isDPoPJKTTableEnabled = isDPoPJKTTableEnabled;
+    }
+
+    /**
+     * Get token provider.
+     *
+     * @return TokenProvider
+     */
+    public TokenProvider getTokenProvider() {
+
+        if (tokenProvider == null) {
+            tokenProvider = new DefaultTokenProvider();
+        }
+        return tokenProvider;
+    }
+
+    /**
+     * Set token provider.
+     *
+     * @param tokenProvider TokenProvider
+     */
+    public void setTokenProvider(TokenProvider tokenProvider) {
+
+        this.tokenProvider = tokenProvider;
     }
 }
