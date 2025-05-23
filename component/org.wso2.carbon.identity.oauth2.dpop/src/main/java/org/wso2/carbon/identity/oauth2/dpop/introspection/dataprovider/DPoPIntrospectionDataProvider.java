@@ -49,7 +49,6 @@ public class DPoPIntrospectionDataProvider extends AbstractIdentityHandler imple
         AccessTokenDO accessTokenDO;
 
         if (isEnabled()) {
-
            if (StringUtils.equals(TOKEN_TYPE_NAME, oAuth2IntrospectionResponseDTO.getTokenType())) {
                accessTokenDO = DPoPDataHolder.getInstance().getTokenProvider().
                        getVerifiedRefreshToken(oAuth2TokenValidationRequestDTO.getAccessToken().getIdentifier());
