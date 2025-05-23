@@ -33,12 +33,12 @@ import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.wso2.carbon.identity.oauth2.validators.RefreshTokenValidator.TOKEN_TYPE_NAME;
+
 /**
  * Introspection Data provider to include cnf  to introspection response.
  */
 public class DPoPIntrospectionDataProvider extends AbstractIdentityHandler implements IntrospectionDataProvider {
-
-    private static final String TOKEN_TYPE = "Refresh";
 
     @Override
     public Map<String, Object> getIntrospectionData(OAuth2TokenValidationRequestDTO oAuth2TokenValidationRequestDTO,
@@ -50,7 +50,7 @@ public class DPoPIntrospectionDataProvider extends AbstractIdentityHandler imple
 
         if (isEnabled()) {
 
-           if (StringUtils.equals(TOKEN_TYPE, oAuth2IntrospectionResponseDTO.getTokenType())) {
+           if (StringUtils.equals(TOKEN_TYPE_NAME, oAuth2IntrospectionResponseDTO.getTokenType())) {
                accessTokenDO = DPoPDataHolder.getInstance().getTokenProvider().
                        getVerifiedRefreshToken(oAuth2TokenValidationRequestDTO.getAccessToken().getIdentifier());
            } else {

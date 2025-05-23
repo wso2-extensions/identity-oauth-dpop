@@ -42,6 +42,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
+import static org.wso2.carbon.identity.oauth2.validators.RefreshTokenValidator.TOKEN_TYPE_NAME;
 
 public class DPoPIntrospectionDataProviderTest {
 
@@ -98,7 +99,7 @@ public class DPoPIntrospectionDataProviderTest {
         when(tokenProvider.getVerifiedRefreshToken("accessTokenId")).thenReturn(accessTokenDO);
         DPoPDataHolder.getInstance().setTokenProvider(tokenProvider);
 
-        this.introspectionResponseDTO.setTokenType("Refresh");
+        this.introspectionResponseDTO.setTokenType(TOKEN_TYPE_NAME);
 
         Map<String, Object> result = introspectionDataProvider.getIntrospectionData(
                 tokenValidationRequestDTO, introspectionResponseDTO);
