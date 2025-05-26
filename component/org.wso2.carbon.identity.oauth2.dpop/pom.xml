@@ -146,6 +146,8 @@
                             version="${apache.commons.logging.package.import.version.range}",
                             org.wso2.carbon.identity.oauth.*;
                             version="${identity.inbound.auth.oauth.imp.pkg.version}",
+                            org.wso2.carbon.identity.oauth.tokenprocessor.*;
+                            version="${identity.inbound.auth.oauth.imp.pkg.version}",
                             org.wso2.carbon.identity.oauth2;
                             version="${identity.inbound.auth.oauth.imp.pkg.version}",
                             org.wso2.carbon.identity.oauth2.authz.*;
