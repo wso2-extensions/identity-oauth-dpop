@@ -30,9 +30,12 @@ import com.nimbusds.jwt.SignedJWT;
 import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
+import org.wso2.carbon.identity.oauth.common.exception.InvalidOAuthClientException;
+import org.wso2.carbon.identity.oauth.dao.OAuthAppDO;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2ClientException;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
 import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
+import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
 
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
@@ -64,6 +67,22 @@ public class Utils {
         } catch (ParseException | JOSEException e) {
             throw new IdentityOAuth2ClientException(DPoPConstants.INVALID_DPOP_PROOF, DPoPConstants.INVALID_DPOP_ERROR);
         }
+    }
+
+    /**
+     * Get Oauth application Access token binding type.
+     *
+     * @param consumerKey Consumer Key.
+     * @param tenantDomain Tenant Domain.
+     * @return Access token binding type of the oauth application.
+     * @throws InvalidOAuthClientException Error while getting the Oauth application information.
+     * @throws IdentityOAuth2Exception Error while getting the Oauth application information.
+     */
+    public static String getApplicationBindingType(String consumerKey, String tenantDomain) throws
+            IdentityOAuth2Exception, InvalidOAuthClientException {
+
+        OAuthAppDO oauthAppDO = OAuth2Util.getAppInformationByClientId(consumerKey, tenantDomain);
+        return oauthAppDO.getTokenBindingType();
     }
 
     private static String getKeyThumbprintOfKey(String jwk, SignedJWT signedJwt)

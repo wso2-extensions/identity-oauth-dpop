@@ -55,4 +55,6 @@ public class DPoPTestConstants {
     public static  final String DUMMY_HTTP_URL = "dummyHttpURL";
 
     public static final String DUMMY_JTI = "dummyJti";
+    public static final String DUMMY_TENANT_DOMAIN = "dummyTenantDomain";
+    public static final String DUMMY_APP_RESIDENT_TENANT_DOMAIN = "dummyAppResidentTenant";
 }

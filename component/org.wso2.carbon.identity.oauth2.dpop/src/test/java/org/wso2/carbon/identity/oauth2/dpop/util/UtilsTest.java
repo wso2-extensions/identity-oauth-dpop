@@ -27,13 +27,17 @@ import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
+import org.wso2.carbon.identity.common.testng.WithCarbonHome;
 import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
+import org.wso2.carbon.identity.oauth.dao.OAuthAppDO;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
 import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
+import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
 
 import java.util.Date;
 
@@ -44,11 +48,14 @@ import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
+import static org.wso2.carbon.identity.oauth2.dpop.util.DPoPTestConstants.DUMMY_CLIENT_ID;
 import static org.wso2.carbon.identity.oauth2.dpop.util.DPoPTestConstants.DUMMY_DPOP_PROOF;
 import static org.wso2.carbon.identity.oauth2.dpop.util.DPoPTestConstants.DUMMY_HTTP_METHOD;
 import static org.wso2.carbon.identity.oauth2.dpop.util.DPoPTestConstants.DUMMY_HTTP_URL;
 import static org.wso2.carbon.identity.oauth2.dpop.util.DPoPTestConstants.DUMMY_JTI;
+import static org.wso2.carbon.identity.oauth2.dpop.util.DPoPTestConstants.DUMMY_TENANT_DOMAIN;
 
+@WithCarbonHome
 public class UtilsTest {
 
     @Mock
@@ -57,10 +64,21 @@ public class UtilsTest {
     @Mock
     JWK mockJWK;
 
+    @Mock
+    private OAuthAppDO mockOAuthAppDO;
+
+    private AutoCloseable closeable;
+
     @BeforeMethod
     public void setUp() {
 
-        MockitoAnnotations.initMocks(this);
+        closeable = MockitoAnnotations.openMocks(this);
+    }
+
+    @AfterMethod
+    public void tearDown() throws Exception {
+
+        closeable.close();
     }
 
     @Test
@@ -106,6 +124,16 @@ public class UtilsTest {
             when(mockJWK.getKeyType()).thenReturn(new KeyType("some_type", Requirement.REQUIRED));
             String dPoPProof = DPoPProofUtil.genarateDPoPProof();
             assertEquals(Utils.getThumbprintOfKeyFromDpopProof(dPoPProof), StringUtils.EMPTY);
+        }
+    }
+
+    @Test
+    public void testGetApplicationBindingType() throws Exception {
+
+        try (MockedStatic<OAuth2Util> oAuth2UtilMockedStatic = mockStatic(OAuth2Util.class)) {
+            oAuth2UtilMockedStatic.when(() -> OAuth2Util.getAppInformationByClientId(anyString(), anyString())).
+                    thenReturn(mockOAuthAppDO);
+            Utils.getApplicationBindingType(DUMMY_CLIENT_ID, DUMMY_TENANT_DOMAIN);
         }
     }
 }
