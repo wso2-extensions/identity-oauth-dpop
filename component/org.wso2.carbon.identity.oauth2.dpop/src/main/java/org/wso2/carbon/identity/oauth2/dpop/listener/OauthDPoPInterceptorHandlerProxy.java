@@ -21,6 +21,7 @@ package org.wso2.carbon.identity.oauth2.dpop.listener;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.core.handler.AbstractIdentityHandler;
 import org.wso2.carbon.identity.core.model.IdentityEventListenerConfig;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
@@ -31,11 +32,13 @@ import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
 import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
 import org.wso2.carbon.identity.oauth2.dpop.dao.DPoPTokenManagerDAO;
 import org.wso2.carbon.identity.oauth2.dpop.internal.DPoPDataHolder;
+import org.wso2.carbon.identity.oauth2.dpop.util.Utils;
 import org.wso2.carbon.identity.oauth2.dpop.validators.DPoPHeaderValidator;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenReqDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenRespDTO;
 import org.wso2.carbon.identity.oauth2.token.OAuthTokenReqMessageContext;
 import org.wso2.carbon.identity.oauth2.token.bindings.TokenBinding;
+import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
 
 import java.util.Map;
 
@@ -67,7 +70,12 @@ public class OauthDPoPInterceptorHandlerProxy extends AbstractOAuthEventIntercep
             LOG.debug(String.format("DPoP proxy intercepted the token request from the client : %s.", consumerKey));
         }
         try {
-            String tokenBindingType = dPoPHeaderValidator.getApplicationBindingType(tokenReqDTO.getClientId());
+            String tenantDomain = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
+            String appResidentTenantDomain = OAuth2Util.getAppResidentTenantDomain();
+            if (StringUtils.isNotEmpty(appResidentTenantDomain)) {
+                tenantDomain = appResidentTenantDomain;
+            }
+            String tokenBindingType = Utils.getApplicationBindingType(tokenReqDTO.getClientId(), tenantDomain);
             if (DPoPConstants.DPOP_TOKEN_TYPE.equals(tokenBindingType)) {
 
                 String dPoPProof = dPoPHeaderValidator.getDPoPHeader(tokReqMsgCtx);

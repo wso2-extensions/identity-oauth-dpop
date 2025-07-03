@@ -29,6 +29,7 @@
             <class name="org.wso2.carbon.identity.oauth2.dpop.dao.DPoPJKTDAOImplTest"/>
             <class name="org.wso2.carbon.identity.oauth2.dpop.dao.DPoPTokenManagerDAOImplTest"/>
             <class name="org.wso2.carbon.identity.oauth2.dpop.introspection.dataprovider.DPoPIntrospectionDataProviderTest"/>
+            <class name="org.wso2.carbon.identity.oauth2.dpop.listener.OauthDPoPInterceptorHandlerProxyTest"/>
         </classes>
     </test>
 </suite>
