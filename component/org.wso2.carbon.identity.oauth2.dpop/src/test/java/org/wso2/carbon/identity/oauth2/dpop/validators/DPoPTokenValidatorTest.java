@@ -18,23 +18,60 @@
 
 package org.wso2.carbon.identity.oauth2.dpop.validators;
 
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import org.mockito.MockedStatic;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.carbon.base.CarbonBaseConstants;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
+import org.wso2.carbon.identity.application.common.model.FederatedAuthenticatorConfig;
 import org.wso2.carbon.identity.application.common.model.IdentityProvider;
+import org.wso2.carbon.identity.application.common.model.Property;
 import org.wso2.carbon.identity.application.common.util.IdentityApplicationConstants;
+import org.wso2.carbon.identity.application.common.util.IdentityApplicationManagementUtil;
 import org.wso2.carbon.identity.core.IdentityKeyStoreResolver;
+import org.wso2.carbon.identity.core.handler.AbstractIdentityHandler;
+import org.wso2.carbon.identity.core.model.IdentityEventListenerConfig;
 import org.wso2.carbon.identity.core.util.IdentityKeyStoreResolverConstants;
+import org.wso2.carbon.identity.core.util.IdentityUtil;
+import org.wso2.carbon.identity.oauth.config.OAuthServerConfiguration;
+import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
+import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
+import org.wso2.carbon.identity.oauth2.dpop.listener.OauthDPoPInterceptorHandlerProxy;
+import org.wso2.carbon.identity.oauth2.dpop.util.Utils;
+import org.wso2.carbon.identity.oauth2.dto.OAuth2TokenValidationRequestDTO;
+import org.wso2.carbon.identity.oauth2.model.AccessTokenDO;
+import org.wso2.carbon.identity.oauth2.token.bindings.TokenBinding;
+import org.wso2.carbon.identity.oauth2.validators.OAuth2TokenValidationMessageContext;
+import org.wso2.carbon.idp.mgt.IdentityProviderManagementException;
+import org.wso2.carbon.idp.mgt.IdentityProviderManager;
 
 import java.io.FileInputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.KeyStore;
+import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPublicKey;
+import java.text.ParseException;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
@@ -77,6 +114,7 @@ public class DPoPTokenValidatorTest {
                     "3pDI4B+vQipcfTjJqgPAWvUz903z61lRuAlJFPPD69l+IQ15z1Mfc7rgl0wmZLBU\n" +
                     "HjVlGsFGQX6e10Rx/msN+NWxKJGf7Z6vxS8Qoc4nddUBnndCOvCVvgI9BThNv0cG\n" +
                     "e3hB2nvCQvUJ/wfuj6i1PNfoM81nA2qEQfjY/QWuF4Ex/RYWBfASNU35TBRVc26R";
+    private static final String ACCESS_TOKEN_DO = "AccessTokenDO";
 
     private PrivilegedCarbonContext privilegedCarbonContext;
 
@@ -146,5 +184,141 @@ public class DPoPTokenValidatorTest {
         KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
         keystore.load(file, password.toCharArray());
         return keystore;
+    }
+
+    @DataProvider(name = "validationRequestDataProvider")
+    public Object[][] validationRequestDataProvider() {
+
+        TokenBinding tokenBinding1 = mock(TokenBinding.class);
+        when(tokenBinding1.getBindingType()).thenReturn(DPoPConstants.OAUTH_DPOP_HEADER);
+        when(tokenBinding1.getBindingValue()).thenReturn("sample-thumb-print");
+
+        AccessTokenDO accessTokenDO1 = mock(AccessTokenDO.class);
+        when(accessTokenDO1.getTokenBinding()).thenReturn(tokenBinding1);
+
+        OAuth2TokenValidationRequestDTO.TokenValidationContextParam[] contextParams1 = new
+                OAuth2TokenValidationRequestDTO.TokenValidationContextParam[3];
+
+        contextParams1[0] = mock(OAuth2TokenValidationRequestDTO.TokenValidationContextParam.class);
+        when(contextParams1[0].getKey()).thenReturn(DPoPConstants.OAUTH_DPOP_HEADER);
+        when(contextParams1[0].getValue()).thenReturn("sample-dpop-header");
+
+        contextParams1[1] = mock(OAuth2TokenValidationRequestDTO.TokenValidationContextParam.class);
+        when(contextParams1[1].getKey()).thenReturn(DPoPConstants.HTTP_METHOD);
+        when(contextParams1[1].getValue()).thenReturn("sample-dpop-http-method");
+
+        contextParams1[2] = mock(OAuth2TokenValidationRequestDTO.TokenValidationContextParam.class);
+        when(contextParams1[2].getKey()).thenReturn(DPoPConstants.HTTP_URL);
+        when(contextParams1[2].getValue()).thenReturn("sample-dpop-http-url");
+
+        OAuth2TokenValidationRequestDTO.OAuth2AccessToken accessToken1 = mock(
+                OAuth2TokenValidationRequestDTO.OAuth2AccessToken.class);
+        when(accessToken1.getTokenType()).thenReturn("Bearer");
+        when(accessToken1.getIdentifier()).thenReturn("sample.access.token");
+
+        OAuth2TokenValidationRequestDTO requestDTO1 = mock(OAuth2TokenValidationRequestDTO.class);
+        when(requestDTO1.getContext()).thenReturn(contextParams1);
+        when(requestDTO1.getAccessToken()).thenReturn(accessToken1);
+
+        OAuth2TokenValidationMessageContext validationRequest = mock(OAuth2TokenValidationMessageContext.class);
+        when(validationRequest.getProperty(ACCESS_TOKEN_DO)).thenReturn(accessTokenDO1);
+        when(validationRequest.getRequestDTO()).thenReturn(requestDTO1);
+
+
+        return new Object[][]{
+                {validationRequest}
+        };
+    }
+
+    @Test(dataProvider = "validationRequestDataProvider", description = "Test the validateAccessToken method")
+    public void testValidateAccessToken(OAuth2TokenValidationMessageContext validationReqDTO)
+            throws IdentityOAuth2Exception, ParseException, IdentityProviderManagementException, JOSEException {
+
+        DPoPTokenValidator dPoPTokenValidator = new DPoPTokenValidator();
+        JWK jwk = mock(JWK.class);
+        when(jwk.isPrivate()).thenReturn(false);
+        JWSHeader jwsHeader = mock(JWSHeader.class);
+        when(jwsHeader.getJWK()).thenReturn(jwk);
+        when(jwsHeader.getAlgorithm()).thenReturn(JWSAlgorithm.RS256);
+        JOSEObjectType headerType = mock(JOSEObjectType.class);
+        when(headerType.toString()).thenReturn(DPoPConstants.DPOP_JWT_TYPE);
+        when(jwsHeader.getType()).thenReturn(headerType);
+        SignedJWT signedJWT = mock(SignedJWT.class);
+        when(signedJWT.getHeader()).thenReturn(jwsHeader);
+        JWTClaimsSet jwtClaimsSet = mock(JWTClaimsSet.class);
+        when(jwtClaimsSet.getClaim(DPoPConstants.DPOP_ISSUED_AT)).thenReturn(Date.from(Instant.now()));
+        Map<String, Object> claims = new HashMap<>();
+        claims.put(DPoPConstants.JTI, "testJti");
+        claims.put(DPoPConstants.DPOP_HTTP_METHOD, "sample-dpop-http-method");
+        when(jwtClaimsSet.getClaims()).thenReturn(claims);
+        when(jwtClaimsSet.getClaim(DPoPConstants.DPOP_HTTP_METHOD)).thenReturn("sample-dpop-http-method");
+        when(jwtClaimsSet.getClaim(DPoPConstants.DPOP_HTTP_URI)).thenReturn("sample-dpop-http-url");
+        when(jwtClaimsSet.getClaim(DPoPConstants.DPOP_ACCESS_TOKEN_HASH))
+                .thenReturn("OWd6_FihO4OX3rxKSPLzMo_d1qzbQqYKbavx4HY5-n4");
+        HashMap<String, Object> cnfClaim = new HashMap<>();
+        cnfClaim.put(DPoPConstants.JWK_THUMBPRINT, "sample-thumb-print");
+        when(jwtClaimsSet.getJSONObjectClaim(DPoPConstants.CNF)).thenReturn(cnfClaim);
+        when(jwtClaimsSet.getSubject()).thenReturn("sample-subject");
+        when(jwtClaimsSet.getJWTID()).thenReturn("testJti");
+        when(jwtClaimsSet.getAudience()).thenReturn(new ArrayList<>());
+        when(jwtClaimsSet.getExpirationTime()).thenReturn(Date.from(Instant.now().plusSeconds(300)));
+        when(jwtClaimsSet.getIssuer()).thenReturn("sample-issuer");
+
+        when(signedJWT.getJWTClaimsSet()).thenReturn(jwtClaimsSet);
+
+        try (MockedStatic<SignedJWT> mockedSignedJWT =  mockStatic(SignedJWT.class);
+             MockedStatic<IdentityUtil> mockedIdentityUtil = mockStatic(IdentityUtil.class);
+             MockedStatic<Utils> utils = mockStatic(Utils.class);
+             MockedStatic<IdentityProviderManager> mockedIdentityProviderManager =
+                mockStatic(IdentityProviderManager.class);
+             MockedStatic<IdentityApplicationManagementUtil> mockedStaticIdentityApplicationManagementUtil =
+                     mockStatic(IdentityApplicationManagementUtil.class);
+             MockedStatic<OAuthServerConfiguration> mockedOAuthServerConfiguration =
+                    mockStatic(OAuthServerConfiguration.class);
+        ) {
+
+            mockedSignedJWT.when(() -> SignedJWT.parse("sample-dpop-header")).thenReturn(signedJWT);
+
+            IdentityEventListenerConfig identityEventListenerConfig = mock(IdentityEventListenerConfig.class);
+            when(identityEventListenerConfig.getProperties()).thenReturn(new Properties());
+            mockedIdentityUtil.when(() -> IdentityUtil.readEventListenerProperty(
+                    AbstractIdentityHandler.class.getName(), OauthDPoPInterceptorHandlerProxy.class.getName()))
+                            .thenReturn(identityEventListenerConfig);
+            utils.when(() -> Utils.getThumbprintOfKeyFromDpopProof("sample-dpop-header"))
+                    .thenReturn("sample-thumb-print");
+            mockedSignedJWT.when(() ->SignedJWT.parse("sample.access.token")).thenReturn(signedJWT);
+            when(signedJWT.verify(any(RSASSAVerifier.class))).thenReturn(true);
+
+            IdentityProviderManager identityProviderManager = mock(IdentityProviderManager.class);
+            IdentityProvider mockedIdp = mock(IdentityProvider.class);
+            when(mockedIdp.getFederatedAuthenticatorConfigs()).thenReturn(new FederatedAuthenticatorConfig[1]);
+            when(mockedIdp.getCertificate()).thenReturn(SAMPLE_ENCODED_CERT);
+            when(identityProviderManager.getResidentIdP("carbon.super")).thenReturn(mockedIdp);
+            mockedIdentityProviderManager.when(IdentityProviderManager::getInstance)
+                    .thenReturn(identityProviderManager);
+            FederatedAuthenticatorConfig mockFedAuthConfig = mock(FederatedAuthenticatorConfig.class);
+            when(mockFedAuthConfig.getProperties()).thenReturn(new Property[1]);
+            mockedStaticIdentityApplicationManagementUtil.when(
+                    () -> IdentityApplicationManagementUtil.getFederatedAuthenticator(any(), anyString()))
+                            .thenReturn(mockFedAuthConfig);
+            Property property = new Property();
+            property.setValue("sample-issuer");
+            mockedStaticIdentityApplicationManagementUtil.when(
+                    () -> IdentityApplicationManagementUtil.getProperty(any(Property[].class), anyString()))
+                    .thenReturn(property);
+            X509Certificate mockedCert = mock(X509Certificate.class);
+            PublicKey mockPublicKey = mock(RSAPublicKey.class);
+            when(mockedCert.getPublicKey()).thenReturn(mockPublicKey);
+            mockedStaticIdentityApplicationManagementUtil.when(
+                    () -> IdentityApplicationManagementUtil.decodeCertificate(anyString()))
+                    .thenReturn(mockedCert);
+
+            OAuthServerConfiguration mockedOAuthServerConfig = mock(OAuthServerConfiguration.class);
+            when(mockedOAuthServerConfig.getTimeStampSkewInSeconds()).thenReturn(1L);
+            mockedOAuthServerConfiguration.when(OAuthServerConfiguration::getInstance)
+                    .thenReturn(mockedOAuthServerConfig);
+
+            dPoPTokenValidator.validateAccessToken(validationReqDTO);
+        }
     }
 }
