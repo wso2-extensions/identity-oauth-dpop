@@ -32,6 +32,7 @@ import org.wso2.carbon.identity.application.common.model.FederatedAuthenticatorC
 import org.wso2.carbon.identity.application.common.model.IdentityProvider;
 import org.wso2.carbon.identity.application.common.util.IdentityApplicationConstants;
 import org.wso2.carbon.identity.application.common.util.IdentityApplicationManagementUtil;
+import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.oauth.config.OAuthServerConfiguration;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
 import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
@@ -87,6 +88,13 @@ public class DPoPTokenValidator implements OAuth2TokenValidator {
                 return true;
             }
             SignedJWT signedJWT = getSignedJWT(validationReqDTO);
+            if (IdentityUtil.exceedsAllowedJWTDepth(validationReqDTO.getRequestDTO()
+                    .getAccessToken().getIdentifier())) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("The DPoP access token identifier exceeds the allowed JWT depth.");
+                }
+                return false;
+            }
             JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
 
             if (claimsSet == null) {
