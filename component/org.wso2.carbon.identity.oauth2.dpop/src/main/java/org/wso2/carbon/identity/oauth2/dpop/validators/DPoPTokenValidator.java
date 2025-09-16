@@ -88,13 +88,6 @@ public class DPoPTokenValidator implements OAuth2TokenValidator {
                 return true;
             }
             SignedJWT signedJWT = getSignedJWT(validationReqDTO);
-            if (IdentityUtil.exceedsAllowedJWTDepth(validationReqDTO.getRequestDTO()
-                    .getAccessToken().getIdentifier())) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("The DPoP access token identifier exceeds the allowed JWT depth.");
-                }
-                return false;
-            }
             JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
 
             if (claimsSet == null) {
@@ -315,6 +308,13 @@ public class DPoPTokenValidator implements OAuth2TokenValidator {
     private boolean validateDPoP(OAuth2TokenValidationMessageContext validationReqDTO) throws IdentityOAuth2Exception,
             ParseException {
 
+        if (IdentityUtil.exceedsAllowedJWTDepth(validationReqDTO.getRequestDTO()
+                .getAccessToken().getIdentifier())) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("The DPoP access token identifier exceeds the allowed JWT depth.");
+            }
+            return false;
+        }
         AccessTokenDO accessTokenDO = (AccessTokenDO) validationReqDTO.getProperty(ACCESS_TOKEN_DO);
         if (accessTokenDO != null && accessTokenDO.getTokenBinding() != null &&
                 DPoPConstants.OAUTH_DPOP_HEADER.equalsIgnoreCase(accessTokenDO.getTokenBinding().getBindingType())) {
