@@ -124,13 +124,7 @@ public class DPoPHeaderValidator {
 
         SignedJWT signedJwt = SignedJWT.parse(dPoPProof);
         JWSHeader header = signedJwt.getHeader();
-        if (IdentityUtil.exceedsAllowedJWTDepth(dPoPProof)) {
-            String error = "The DPoP proof exceeds the allowed JWT depth.";
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(error);
-            }
-            throw new ParseException(error, 0);
-        }
+        IdentityUtil.validateJWTDepth(dPoPProof);
 
         return validateDPoPPayload(httpMethod, httpURL, signedJwt.getJWTClaimsSet()) && validateDPoPHeader(header);
     }
@@ -151,13 +145,7 @@ public class DPoPHeaderValidator {
 
         SignedJWT signedJwt = SignedJWT.parse(dPoPProof);
         JWSHeader header = signedJwt.getHeader();
-        if (IdentityUtil.exceedsAllowedJWTDepth(dPoPProof)) {
-            String error = "The DPoP proof exceeds the allowed JWT depth.";
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(error);
-            }
-            throw new ParseException(error, 0);
-        }
+        IdentityUtil.validateJWTDepth(dPoPProof);
 
         return validateDPoPPayload(httpMethod, httpURL, signedJwt.getJWTClaimsSet(), token) &&
                 validateDPoPHeader(header);

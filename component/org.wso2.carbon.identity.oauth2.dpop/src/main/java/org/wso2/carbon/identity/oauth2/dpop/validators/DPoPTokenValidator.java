@@ -308,13 +308,7 @@ public class DPoPTokenValidator implements OAuth2TokenValidator {
     private boolean validateDPoP(OAuth2TokenValidationMessageContext validationReqDTO) throws IdentityOAuth2Exception,
             ParseException {
 
-        if (IdentityUtil.exceedsAllowedJWTDepth(validationReqDTO.getRequestDTO()
-                .getAccessToken().getIdentifier())) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("The DPoP access token identifier exceeds the allowed JWT depth.");
-            }
-            return false;
-        }
+        IdentityUtil.validateJWTDepth(validationReqDTO.getRequestDTO().getAccessToken().getIdentifier());
         AccessTokenDO accessTokenDO = (AccessTokenDO) validationReqDTO.getProperty(ACCESS_TOKEN_DO);
         if (accessTokenDO != null && accessTokenDO.getTokenBinding() != null &&
                 DPoPConstants.OAUTH_DPOP_HEADER.equalsIgnoreCase(accessTokenDO.getTokenBinding().getBindingType())) {
