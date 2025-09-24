@@ -88,6 +88,7 @@ public class DPoPTokenValidator implements OAuth2TokenValidator {
                 return true;
             }
             SignedJWT signedJWT = getSignedJWT(validationReqDTO);
+            IdentityUtil.validateJWTDepth(validationReqDTO.getRequestDTO().getAccessToken().getIdentifier());
             JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
 
             if (claimsSet == null) {
@@ -308,7 +309,6 @@ public class DPoPTokenValidator implements OAuth2TokenValidator {
     private boolean validateDPoP(OAuth2TokenValidationMessageContext validationReqDTO) throws IdentityOAuth2Exception,
             ParseException {
 
-        IdentityUtil.validateJWTDepth(validationReqDTO.getRequestDTO().getAccessToken().getIdentifier());
         AccessTokenDO accessTokenDO = (AccessTokenDO) validationReqDTO.getProperty(ACCESS_TOKEN_DO);
         if (accessTokenDO != null && accessTokenDO.getTokenBinding() != null &&
                 DPoPConstants.OAUTH_DPOP_HEADER.equalsIgnoreCase(accessTokenDO.getTokenBinding().getBindingType())) {
