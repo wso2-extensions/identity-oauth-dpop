@@ -52,6 +52,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DPoP token validator.
@@ -136,7 +137,11 @@ public class DPoPTokenValidator implements OAuth2TokenValidator {
             throw new IdentityOAuth2Exception("Mandatory field cnf is  empty in the given Token.");
         }
 
-        String jkt = claimsSet.getJSONObjectClaim(DPoPConstants.CNF).getAsString(DPoPConstants.JWK_THUMBPRINT);
+        Map<String, Object> cnf = claimsSet.getJSONObjectClaim(DPoPConstants.CNF);
+        if (cnf == null) {
+            throw new IdentityOAuth2Exception("CNF is null.");
+        }
+        String jkt = (String) cnf.get(DPoPConstants.JWK_THUMBPRINT);
         if (StringUtils.isBlank(jkt) || !bindingValue.equalsIgnoreCase(jkt)) {
             throw new IdentityOAuth2Exception("Mandatory field jkt is  empty or invalid in the cnf.");
         }
