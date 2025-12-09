@@ -124,6 +124,7 @@ public class DPoPHeaderValidator {
 
         SignedJWT signedJwt = SignedJWT.parse(dPoPProof);
         JWSHeader header = signedJwt.getHeader();
+        IdentityUtil.validateJWTDepth(dPoPProof);
 
         return validateDPoPPayload(httpMethod, httpURL, signedJwt.getJWTClaimsSet()) && validateDPoPHeader(header);
     }
@@ -144,6 +145,7 @@ public class DPoPHeaderValidator {
 
         SignedJWT signedJwt = SignedJWT.parse(dPoPProof);
         JWSHeader header = signedJwt.getHeader();
+        IdentityUtil.validateJWTDepth(dPoPProof);
 
         return validateDPoPPayload(httpMethod, httpURL, signedJwt.getJWTClaimsSet(), token) &&
                 validateDPoPHeader(header);

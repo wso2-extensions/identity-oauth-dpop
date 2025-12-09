@@ -32,6 +32,7 @@ import org.wso2.carbon.identity.application.common.model.FederatedAuthenticatorC
 import org.wso2.carbon.identity.application.common.model.IdentityProvider;
 import org.wso2.carbon.identity.application.common.util.IdentityApplicationConstants;
 import org.wso2.carbon.identity.application.common.util.IdentityApplicationManagementUtil;
+import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.oauth.config.OAuthServerConfiguration;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
 import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
@@ -88,6 +89,7 @@ public class DPoPTokenValidator implements OAuth2TokenValidator {
                 return true;
             }
             SignedJWT signedJWT = getSignedJWT(validationReqDTO);
+            IdentityUtil.validateJWTDepth(validationReqDTO.getRequestDTO().getAccessToken().getIdentifier());
             JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
 
             if (claimsSet == null) {
