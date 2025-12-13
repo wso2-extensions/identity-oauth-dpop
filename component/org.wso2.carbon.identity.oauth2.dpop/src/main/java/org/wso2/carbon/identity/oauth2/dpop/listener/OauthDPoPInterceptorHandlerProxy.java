@@ -71,11 +71,14 @@ public class OauthDPoPInterceptorHandlerProxy extends AbstractOAuthEventIntercep
         }
         try {
             String tenantDomain = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
-            String appResidentTenantDomain = OAuth2Util.getAppResidentTenantDomain();
-            if (StringUtils.isNotEmpty(appResidentTenantDomain)) {
-                tenantDomain = appResidentTenantDomain;
+            String accessingOrgId = PrivilegedCarbonContext.getThreadLocalCarbonContext()
+                    .getAccessingOrganizationId();
+            String tokenBindingType;
+            if (StringUtils.isNotEmpty(accessingOrgId)) {
+                tokenBindingType = Utils.getResolvedApplicationBindingType(tokenReqDTO.getClientId(), accessingOrgId);
+            } else {
+                tokenBindingType = Utils.getApplicationBindingType(tokenReqDTO.getClientId(), tenantDomain);
             }
-            String tokenBindingType = Utils.getApplicationBindingType(tokenReqDTO.getClientId(), tenantDomain);
             if (DPoPConstants.DPOP_TOKEN_TYPE.equals(tokenBindingType)) {
 
                 String dPoPProof = dPoPHeaderValidator.getDPoPHeader(tokReqMsgCtx);
