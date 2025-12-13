@@ -85,6 +85,13 @@ public class Utils {
         return oauthAppDO.getTokenBindingType();
     }
 
+    public static String getResolvedApplicationBindingType(String consumerKey, String organizationId) throws
+            IdentityOAuth2Exception, InvalidOAuthClientException {
+
+        OAuthAppDO oauthAppDO = OAuth2Util.getAppInformationFromOrgHierarchy(consumerKey, organizationId);
+        return oauthAppDO.getTokenBindingType();
+    }
+
     private static String getKeyThumbprintOfKey(String jwk, SignedJWT signedJwt)
             throws ParseException, JOSEException {
 

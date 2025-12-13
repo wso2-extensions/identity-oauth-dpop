@@ -424,7 +424,7 @@
     <properties>
         <carbon.identity.version>7.8.506</carbon.identity.version>
         <carbon.identity.application.common.version>5.25.305</carbon.identity.application.common.version>
-        <carbon.utils.version>4.9.10</carbon.utils.version>
+        <carbon.utils.version>4.10.111</carbon.utils.version>
         <identity.inbound.auth.oauth.version>7.0.286</identity.inbound.auth.oauth.version>
         <org.wso2.carbon.identity.core.version>7.8.506</org.wso2.carbon.identity.core.version>
         <org.wso2.carbon.database.utils.version>2.0.7</org.wso2.carbon.database.utils.version>
