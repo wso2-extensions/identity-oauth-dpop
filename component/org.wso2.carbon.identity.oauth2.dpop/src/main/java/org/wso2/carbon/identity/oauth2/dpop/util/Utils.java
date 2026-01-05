@@ -28,6 +28,7 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.SignedJWT;
 import org.apache.commons.lang.StringUtils;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
 import org.wso2.carbon.identity.oauth.common.exception.InvalidOAuthClientException;
@@ -83,6 +84,22 @@ public class Utils {
 
         OAuthAppDO oauthAppDO = OAuth2Util.getAppInformationByClientId(consumerKey, tenantDomain);
         return oauthAppDO.getTokenBindingType();
+    }
+
+    /**
+     * Get tenant domain from the carbon context or from the application resident tenant domain.
+     *
+     * @return tenant domain of the application.
+     * @throws IdentityOAuth2Exception when error occurs while getting the tenant domain.
+     */
+    public static String getTenantDomain() throws IdentityOAuth2Exception {
+
+        String tenantDomain = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
+        String appResidentTenantDomain = OAuth2Util.getAppResidentTenantDomain();
+        if (StringUtils.isNotEmpty(appResidentTenantDomain)) {
+            tenantDomain = appResidentTenantDomain;
+        }
+        return tenantDomain;
     }
 
     private static String getKeyThumbprintOfKey(String jwk, SignedJWT signedJwt)

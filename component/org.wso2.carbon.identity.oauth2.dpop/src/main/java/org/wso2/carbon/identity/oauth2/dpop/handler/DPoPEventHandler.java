@@ -76,7 +76,7 @@ public class DPoPEventHandler extends AbstractEventHandler {
             String clientId = sessionDataCacheEntry.getParamMap().get(DPoPConstants.CLIENT_ID)[0];
             try {
                 DPoPHeaderValidator dPoPHeaderValidator = new DPoPHeaderValidator();
-                String tokenBindingType = dPoPHeaderValidator.getApplicationBindingType(clientId);
+                String tokenBindingType = Utils.getApplicationBindingType(clientId, Utils.getTenantDomain());
                 if (DPoPConstants.DPOP_TOKEN_TYPE.equals(tokenBindingType) &&
                         sessionDataCacheEntry.getParamMap().containsKey(DPoPConstants.DPOP_JKT)) {
 
@@ -112,7 +112,7 @@ public class DPoPEventHandler extends AbstractEventHandler {
             String clientId = parameters.get(DPoPConstants.CLIENT_ID);
             try {
                 DPoPHeaderValidator dPoPHeaderValidator = new DPoPHeaderValidator();
-                String tokenBindingType = dPoPHeaderValidator.getApplicationBindingType(clientId);
+                String tokenBindingType = Utils.getApplicationBindingType(clientId, Utils.getTenantDomain());
                 if (DPoPConstants.DPOP_TOKEN_TYPE.equals(tokenBindingType) &&
                         headers.containsKey(DPoPConstants.OAUTH_DPOP_HEADER.toLowerCase())) {
                     Enumeration<String> dPoPProofEnum = headers.get(DPoPConstants.OAUTH_DPOP_HEADER.toLowerCase());
