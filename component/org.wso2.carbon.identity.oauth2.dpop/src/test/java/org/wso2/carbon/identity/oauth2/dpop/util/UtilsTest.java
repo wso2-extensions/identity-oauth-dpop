@@ -31,6 +31,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.identity.common.testng.WithCarbonHome;
 import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
@@ -134,6 +135,37 @@ public class UtilsTest {
             oAuth2UtilMockedStatic.when(() -> OAuth2Util.getAppInformationByClientId(anyString(), anyString())).
                     thenReturn(mockOAuthAppDO);
             Utils.getApplicationBindingType(DUMMY_CLIENT_ID, DUMMY_TENANT_DOMAIN);
+        }
+    }
+
+    @DataProvider(name = "tenantDomainProvider")
+    public Object[][] tenantDomainProvider() {
+
+        return new Object[][]{
+                // contextTenantDomain, appResidentTenantDomain, expectedTenantDomain
+                {"carbon.super", null, "carbon.super"},
+                {"carbon.super", "", "carbon.super"},
+                {"carbon.super", "wso2.com", "wso2.com"},
+                {"tenant1.com", "tenant2.com", "tenant2.com"}
+        };
+    }
+
+    @Test(dataProvider = "tenantDomainProvider")
+    public void testGetTenantDomain(String contextTenantDomain, String appResidentTenantDomain,
+                                     String expectedTenantDomain) throws Exception {
+
+        try (MockedStatic<PrivilegedCarbonContext> privilegedCarbonContextMockedStatic =
+                mockStatic(PrivilegedCarbonContext.class);
+             MockedStatic<OAuth2Util> oAuth2UtilMockedStatic = mockStatic(OAuth2Util.class)) {
+
+            PrivilegedCarbonContext privilegedCarbonContext = Mockito.mock(PrivilegedCarbonContext.class);
+            privilegedCarbonContextMockedStatic.when(PrivilegedCarbonContext::getThreadLocalCarbonContext)
+                    .thenReturn(privilegedCarbonContext);
+            when(privilegedCarbonContext.getTenantDomain()).thenReturn(contextTenantDomain);
+            oAuth2UtilMockedStatic.when(OAuth2Util::getAppResidentTenantDomain).thenReturn(appResidentTenantDomain);
+
+            String tenantDomain = Utils.getTenantDomain();
+            assertEquals(tenantDomain, expectedTenantDomain);
         }
     }
 }
