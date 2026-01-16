@@ -116,7 +116,7 @@ public class DPoPTokenValidatorTest {
                     "e3hB2nvCQvUJ/wfuj6i1PNfoM81nA2qEQfjY/QWuF4Ex/RYWBfASNU35TBRVc26R";
     private static final String ACCESS_TOKEN_DO = "AccessTokenDO";
 
-    // Test constants
+    // Test constants.
     private static final String SAMPLE_DPOP_HEADER = "sample-dpop-header";
     private static final String SAMPLE_HTTP_METHOD = "sample-dpop-http-method";
     private static final String SAMPLE_HTTP_URL = "sample-dpop-http-url";
@@ -245,10 +245,10 @@ public class DPoPTokenValidatorTest {
     public void testValidateAccessToken(OAuth2TokenValidationMessageContext validationContext)
             throws IdentityOAuth2Exception, ParseException, IdentityProviderManagementException, JOSEException {
 
-        // Initialize validator
+        // Initialize validator.
         DPoPTokenValidator validator = new DPoPTokenValidator();
 
-        // Setup mocks
+        // Setup mocks.
         SignedJWT mockSignedJWT = createMockSignedJWT();
 
         try (MockedStatic<SignedJWT> mockedSignedJWT = mockStatic(SignedJWT.class);
@@ -262,7 +262,7 @@ public class DPoPTokenValidatorTest {
                      mockStatic(OAuthServerConfiguration.class);
         ) {
 
-            // Setup static method mocks
+            // Setup static method mocks.
             setupSignedJWTMocks(mockedSignedJWT, mockSignedJWT);
             setupIdentityUtilMocks(mockedIdentityUtil);
             setupUtilsMocks(mockedUtils);
@@ -270,7 +270,7 @@ public class DPoPTokenValidatorTest {
             setupIdentityApplicationMocks(mockedIdentityAppUtil);
             setupOAuthServerConfigMocks(mockedOAuthServerConfig);
 
-            // Execute validation
+            // Execute validation.
             validator.validateAccessToken(validationContext);
         }
     }
@@ -279,17 +279,18 @@ public class DPoPTokenValidatorTest {
      * Creates and configures a mock SignedJWT with all necessary claims and header information.
      */
     private SignedJWT createMockSignedJWT() throws ParseException, JOSEException {
+
         SignedJWT signedJWT = mock(SignedJWT.class);
 
-        // Setup JWT header
+        // Setup JWT header.
         JWSHeader jwsHeader = createMockJWSHeader();
         when(signedJWT.getHeader()).thenReturn(jwsHeader);
 
-        // Setup JWT claims
+        // Setup JWT claims.
         JWTClaimsSet claimsSet = createMockJWTClaimsSet();
         when(signedJWT.getJWTClaimsSet()).thenReturn(claimsSet);
 
-        // Setup verification
+        // Setup verification.
         when(signedJWT.verify(any(RSASSAVerifier.class))).thenReturn(true);
 
         return signedJWT;
@@ -299,6 +300,7 @@ public class DPoPTokenValidatorTest {
      * Creates and configures a mock JWS header with required DPoP header information.
      */
     private JWSHeader createMockJWSHeader() {
+
         JWK jwk = mock(JWK.class);
         when(jwk.isPrivate()).thenReturn(false);
 
@@ -317,29 +319,30 @@ public class DPoPTokenValidatorTest {
      * Creates and configures a mock JWT claims set with all required DPoP claims.
      */
     private JWTClaimsSet createMockJWTClaimsSet() throws ParseException {
+
         JWTClaimsSet claimsSet = mock(JWTClaimsSet.class);
 
-        // Setup time-based claims
+        // Setup time-based claims.
         when(claimsSet.getClaim(DPoPConstants.DPOP_ISSUED_AT)).thenReturn(Date.from(Instant.now()));
         when(claimsSet.getExpirationTime()).thenReturn(Date.from(Instant.now().plusSeconds(300)));
 
-        // Setup DPoP specific claims
+        // Setup DPoP specific claims.
         when(claimsSet.getClaim(DPoPConstants.DPOP_HTTP_METHOD)).thenReturn(SAMPLE_HTTP_METHOD);
         when(claimsSet.getClaim(DPoPConstants.DPOP_HTTP_URI)).thenReturn(SAMPLE_HTTP_URL);
         when(claimsSet.getClaim(DPoPConstants.DPOP_ACCESS_TOKEN_HASH)).thenReturn(SAMPLE_TOKEN_HASH);
 
-        // Setup confirmation claim
+        // Setup confirmation claim.
         Map<String, Object> cnfClaim = new HashMap<>();
         cnfClaim.put(DPoPConstants.JWK_THUMBPRINT, SAMPLE_THUMBPRINT);
         when(claimsSet.getJSONObjectClaim(DPoPConstants.CNF)).thenReturn(cnfClaim);
 
-        // Setup standard JWT claims
+        // Setup standard JWT claims.
         when(claimsSet.getSubject()).thenReturn(SAMPLE_SUBJECT);
         when(claimsSet.getJWTID()).thenReturn(TEST_JTI);
         when(claimsSet.getAudience()).thenReturn(new ArrayList<>());
         when(claimsSet.getIssuer()).thenReturn(SAMPLE_ISSUER);
 
-        // Setup claims map
+        // Setup claims map.
         Map<String, Object> allClaims = new HashMap<>();
         allClaims.put(DPoPConstants.JTI, TEST_JTI);
         allClaims.put(DPoPConstants.DPOP_HTTP_METHOD, SAMPLE_HTTP_METHOD);
@@ -352,6 +355,7 @@ public class DPoPTokenValidatorTest {
      * Setup mocks for SignedJWT static methods.
      */
     private void setupSignedJWTMocks(MockedStatic<SignedJWT> mockedSignedJWT, SignedJWT mockSignedJWT) {
+
         mockedSignedJWT.when(() -> SignedJWT.parse(SAMPLE_DPOP_HEADER)).thenReturn(mockSignedJWT);
         mockedSignedJWT.when(() -> SignedJWT.parse(SAMPLE_ACCESS_TOKEN)).thenReturn(mockSignedJWT);
     }
@@ -360,6 +364,7 @@ public class DPoPTokenValidatorTest {
      * Setup mocks for IdentityUtil static methods.
      */
     private void setupIdentityUtilMocks(MockedStatic<IdentityUtil> mockedIdentityUtil) {
+
         IdentityEventListenerConfig config = mock(IdentityEventListenerConfig.class);
         when(config.getProperties()).thenReturn(new Properties());
 
@@ -373,6 +378,7 @@ public class DPoPTokenValidatorTest {
      * Setup mocks for Utils static methods.
      */
     private void setupUtilsMocks(MockedStatic<Utils> mockedUtils) {
+
         mockedUtils.when(() -> Utils.getThumbprintOfKeyFromDpopProof(SAMPLE_DPOP_HEADER))
                 .thenReturn(SAMPLE_THUMBPRINT);
     }
@@ -399,21 +405,22 @@ public class DPoPTokenValidatorTest {
      * Setup mocks for IdentityApplicationManagementUtil static methods.
      */
     private void setupIdentityApplicationMocks(MockedStatic<IdentityApplicationManagementUtil> mockedIdentityAppUtil) {
-        // Setup federated authenticator config
+
+        // Setup federated authenticator config.
         FederatedAuthenticatorConfig authConfig = mock(FederatedAuthenticatorConfig.class);
         when(authConfig.getProperties()).thenReturn(new Property[1]);
         mockedIdentityAppUtil.when(() -> IdentityApplicationManagementUtil
                 .getFederatedAuthenticator(any(), anyString()))
                 .thenReturn(authConfig);
 
-        // Setup property retrieval
+        // Setup property retrieval.
         Property property = new Property();
         property.setValue(SAMPLE_ISSUER);
         mockedIdentityAppUtil.when(() -> IdentityApplicationManagementUtil
                 .getProperty(any(Property[].class), anyString()))
                 .thenReturn(property);
 
-        // Setup certificate decoding
+        // Setup certificate decoding.
         X509Certificate certificate = mock(X509Certificate.class);
         PublicKey publicKey = mock(RSAPublicKey.class);
         when(certificate.getPublicKey()).thenReturn(publicKey);
@@ -426,6 +433,7 @@ public class DPoPTokenValidatorTest {
      * Setup mocks for OAuthServerConfiguration.
      */
     private void setupOAuthServerConfigMocks(MockedStatic<OAuthServerConfiguration> mockedOAuthServerConfig) {
+
         OAuthServerConfiguration serverConfig = mock(OAuthServerConfiguration.class);
         when(serverConfig.getTimeStampSkewInSeconds()).thenReturn(1L);
         mockedOAuthServerConfig.when(OAuthServerConfiguration::getInstance)
