@@ -216,7 +216,7 @@
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
-                <artifactId>mockito-inline</artifactId>
+                <artifactId>mockito-core</artifactId>
                 <version>${mockito.version}</version>
             </dependency>
             <dependency>
@@ -365,8 +365,8 @@
                 <inherited>true</inherited>
                 <configuration>
                     <encoding>UTF-8</encoding>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>21</source>
+                    <target>21</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -464,7 +464,7 @@
         <carbon.kernel.package.import.version.range>[4.5.0, 5.0.0)</carbon.kernel.package.import.version.range>
         <nimbusds.osgi.version.range>[10.0.0,11.0.0)</nimbusds.osgi.version.range>
         <net.minidev.json.imp.pkg.version.range>[1.3.0, 3.0.0)</net.minidev.json.imp.pkg.version.range>
-        <javax.servlet.http.package.import.version.range>[2.6,3)</javax.servlet.http.package.import.version.range>
+        <javax.servlet.http.package.import.version.range>[3.1.0, 4.0.0)</javax.servlet.http.package.import.version.range>
         <apache.commons.lang.package.import.version.range>[2.6,3)</apache.commons.lang.package.import.version.range>
         <apache.commons.logging.package.import.version.range>[1.2.0, 2.0.0)
         </apache.commons.logging.package.import.version.range>
@@ -485,19 +485,18 @@
         <testng.version>7.10.1</testng.version>
         <jacoco.version>0.8.12</jacoco.version>
         <h2database.version>2.2.224</h2database.version>
-        <mockito.version>4.11.0</mockito.version>
+        <mockito.version>5.3.1</mockito.version>
         <maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version>
         <javaee.web.api.version>7.0</javaee.web.api.version>
         <org.wso2.carbon.identity.testutil.version>5.11.9</org.wso2.carbon.identity.testutil.version>
         <maven.plugins.version>2.0</maven.plugins.version>
         <maven.resource.plugin.version>3.0.2</maven.resource.plugin.version>
-        <maven.plugins.version.source>1.8</maven.plugins.version.source>
-        <maven.bundle.plugins.version>3.2.0</maven.bundle.plugins.version>
-        <maven.compiler.plugin>3.7.0</maven.compiler.plugin>
+        <maven.bundle.plugins.version>5.1.9</maven.bundle.plugins.version>
+        <maven.compiler.plugin>3.14.1</maven.compiler.plugin>
         <maven.buildnumber.plugin.version>1.4</maven.buildnumber.plugin.version>
 
         <maven.checkstyleplugin.version>3.1.0</maven.checkstyleplugin.version>
-        <spotbugs-maven-plugin.version>4.7.2.1</spotbugs-maven-plugin.version>
+        <spotbugs-maven-plugin.version>4.9.8.2</spotbugs-maven-plugin.version>
         <findsecbugs-plugin.version>1.10.1</findsecbugs-plugin.version>
 
         <!-- Pax Logging Version -->
