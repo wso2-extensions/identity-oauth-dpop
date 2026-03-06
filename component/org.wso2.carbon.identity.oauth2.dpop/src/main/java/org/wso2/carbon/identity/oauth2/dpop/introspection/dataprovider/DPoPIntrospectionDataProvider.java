@@ -24,10 +24,10 @@ import org.wso2.carbon.identity.core.handler.AbstractIdentityHandler;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
 import org.wso2.carbon.identity.oauth2.IntrospectionDataProvider;
 import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
-import org.wso2.carbon.identity.oauth2.dpop.internal.DPoPDataHolder;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2IntrospectionResponseDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2TokenValidationRequestDTO;
 import org.wso2.carbon.identity.oauth2.model.AccessTokenDO;
+import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -49,12 +49,11 @@ public class DPoPIntrospectionDataProvider extends AbstractIdentityHandler imple
 
         if (isEnabled()) {
            if (StringUtils.equals(TOKEN_TYPE_NAME, oAuth2IntrospectionResponseDTO.getTokenType())) {
-               accessTokenDO = DPoPDataHolder.getInstance().getTokenProvider().
-                       getVerifiedRefreshToken(oAuth2TokenValidationRequestDTO.getAccessToken().getIdentifier());
+               accessTokenDO = OAuth2Util.getTokenProvider().getVerifiedRefreshToken(
+                       oAuth2TokenValidationRequestDTO.getAccessToken().getIdentifier());
            } else {
-               accessTokenDO = DPoPDataHolder.getInstance().getTokenProvider().
-                       getVerifiedAccessToken(oAuth2TokenValidationRequestDTO.getAccessToken().getIdentifier(),
-                               false);
+               accessTokenDO = OAuth2Util.getTokenProvider().getVerifiedAccessToken(
+                       oAuth2TokenValidationRequestDTO.getAccessToken().getIdentifier(), false);
            }
 
            if (accessTokenDO.getTokenBinding() != null &&
