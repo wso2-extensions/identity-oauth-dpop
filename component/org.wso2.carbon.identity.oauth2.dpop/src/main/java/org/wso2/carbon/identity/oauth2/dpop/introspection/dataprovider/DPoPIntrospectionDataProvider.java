@@ -28,7 +28,6 @@ import org.wso2.carbon.identity.oauth2.dpop.internal.DPoPDataHolder;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2IntrospectionResponseDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2TokenValidationRequestDTO;
 import org.wso2.carbon.identity.oauth2.model.AccessTokenDO;
-import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -53,9 +52,9 @@ public class DPoPIntrospectionDataProvider extends AbstractIdentityHandler imple
                accessTokenDO = DPoPDataHolder.getInstance().getTokenProvider().
                        getVerifiedRefreshToken(oAuth2TokenValidationRequestDTO.getAccessToken().getIdentifier());
            } else {
-               accessTokenDO = OAuth2Util
-                       .findAccessToken(oAuth2TokenValidationRequestDTO.getAccessToken()
-                               .getIdentifier(), false);
+               accessTokenDO = DPoPDataHolder.getInstance().getTokenProvider().
+                       getVerifiedAccessToken(oAuth2TokenValidationRequestDTO.getAccessToken().getIdentifier(),
+                               false);
            }
 
            if (accessTokenDO.getTokenBinding() != null &&
