@@ -70,6 +70,23 @@ public class Utils {
         }
     }
 
+    public static String getResolvedApplicationBindingType(String consumerKey)
+            throws IdentityOAuth2Exception, InvalidOAuthClientException {
+
+        String accessingOrgId = PrivilegedCarbonContext.getThreadLocalCarbonContext().getAccessingOrganizationId();
+        if (StringUtils.isNotEmpty(accessingOrgId)) {
+            return getResolvedAppBindingTypeFromHierarchy(consumerKey, accessingOrgId);
+        }
+        return OAuth2Util.getAppInformationByClientId(consumerKey).getTokenBindingType();
+    }
+
+    private static String getResolvedAppBindingTypeFromHierarchy(String consumerKey, String organizationId) throws
+            IdentityOAuth2Exception, InvalidOAuthClientException {
+
+        OAuthAppDO oauthAppDO = OAuth2Util.getAppInformationFromOrgHierarchy(consumerKey, organizationId);
+        return oauthAppDO.getTokenBindingType();
+    }
+
     /**
      * Get Oauth application Access token binding type.
      *
@@ -79,7 +96,7 @@ public class Utils {
      * @throws InvalidOAuthClientException Error while getting the Oauth application information.
      * @throws IdentityOAuth2Exception Error while getting the Oauth application information.
      */
-    public static String getApplicationBindingType(String consumerKey, String tenantDomain) throws
+    public static String getResolvedApplicationBindingType(String consumerKey, String tenantDomain) throws
             IdentityOAuth2Exception, InvalidOAuthClientException {
 
         OAuthAppDO oauthAppDO = OAuth2Util.getAppInformationByClientId(consumerKey, tenantDomain);

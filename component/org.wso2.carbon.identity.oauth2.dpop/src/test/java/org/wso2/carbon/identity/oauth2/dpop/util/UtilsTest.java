@@ -134,7 +134,7 @@ public class UtilsTest {
         try (MockedStatic<OAuth2Util> oAuth2UtilMockedStatic = mockStatic(OAuth2Util.class)) {
             oAuth2UtilMockedStatic.when(() -> OAuth2Util.getAppInformationByClientId(anyString(), anyString())).
                     thenReturn(mockOAuthAppDO);
-            Utils.getApplicationBindingType(DUMMY_CLIENT_ID, DUMMY_TENANT_DOMAIN);
+            Utils.getResolvedApplicationBindingType(DUMMY_CLIENT_ID, DUMMY_TENANT_DOMAIN);
         }
     }
 

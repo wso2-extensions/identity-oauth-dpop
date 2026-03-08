@@ -116,7 +116,7 @@ public class DPoPEventHandlerTest {
         eventProperties.put(REQUEST_PARAMETERS, parameters);
         when(event.getEventProperties()).thenReturn(eventProperties);
 
-        utilsMockedStatic.when(() -> Utils.getApplicationBindingType(eq(clientId), anyString()))
+        utilsMockedStatic.when(() -> Utils.getResolvedApplicationBindingType(eq(clientId), anyString()))
                 .thenReturn("TestBindingType");
 
         DPoPEventHandler dPoPEventHandler = new DPoPEventHandler();
@@ -161,13 +161,13 @@ public class DPoPEventHandlerTest {
         when(sessionDataCache.getValueFromCache(any(SessionDataCacheKey.class))).thenReturn(sessionDataCacheEntry);
 
         // Mock token binding type as "Bearer" instead of "DPoP"
-        utilsMockedStatic.when(() -> Utils.getApplicationBindingType(eq(clientId), anyString()))
+        utilsMockedStatic.when(() -> Utils.getResolvedApplicationBindingType(eq(clientId), anyString()))
                 .thenReturn("TestBindingType");
 
         DPoPEventHandler dPoPEventHandler = new DPoPEventHandler();
         dPoPEventHandler.handleEvent(event);
 
         // Verify that getApplicationBindingType was called
-        utilsMockedStatic.verify(() -> Utils.getApplicationBindingType(eq(clientId), anyString()));
+        utilsMockedStatic.verify(() -> Utils.getResolvedApplicationBindingType(eq(clientId), anyString()));
     }
 }

@@ -66,7 +66,7 @@ public class OauthDPoPInterceptorHandlerProxyTest {
                 thenReturn(DUMMY_APP_RESIDENT_TENANT_DOMAIN);
 
         utilsMockedStatic = mockStatic(Utils.class);
-        utilsMockedStatic.when(() -> Utils.getApplicationBindingType(anyString(), anyString())).
+        utilsMockedStatic.when(() -> Utils.getResolvedApplicationBindingType(anyString(), anyString())).
                 thenReturn(DUMMY_TOKEN_BINDING_TYPE);
     }
 
