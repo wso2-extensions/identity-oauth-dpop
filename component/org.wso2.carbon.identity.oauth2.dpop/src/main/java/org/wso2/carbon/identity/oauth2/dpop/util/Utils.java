@@ -70,6 +70,14 @@ public class Utils {
         }
     }
 
+    /**
+     * Get the resolved application binding type by traversing the application in orgHierarchy.
+     *
+     * @param consumerKey Consumer Key.
+     * @return Resolved application binding type.
+     * @throws IdentityOAuth2Exception Error while getting the Oauth application information.
+     * @throws InvalidOAuthClientException Error while getting the Oauth application information.
+     */
     public static String getResolvedApplicationBindingType(String consumerKey)
             throws IdentityOAuth2Exception, InvalidOAuthClientException {
 
@@ -96,7 +104,7 @@ public class Utils {
      * @throws InvalidOAuthClientException Error while getting the Oauth application information.
      * @throws IdentityOAuth2Exception Error while getting the Oauth application information.
      */
-    public static String getResolvedApplicationBindingType(String consumerKey, String tenantDomain) throws
+    public static String getApplicationBindingType(String consumerKey, String tenantDomain) throws
             IdentityOAuth2Exception, InvalidOAuthClientException {
 
         OAuthAppDO oauthAppDO = OAuth2Util.getAppInformationByClientId(consumerKey, tenantDomain);
