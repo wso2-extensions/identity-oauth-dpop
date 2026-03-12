@@ -24,11 +24,9 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.wso2.carbon.identity.oauth.config.OAuthServerConfiguration;
 import org.wso2.carbon.identity.oauth.tokenprocessor.TokenProvider;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
 import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
-import org.wso2.carbon.identity.oauth2.dpop.internal.DPoPDataHolder;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2IntrospectionResponseDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2TokenValidationRequestDTO;
 import org.wso2.carbon.identity.oauth2.model.AccessTokenDO;
@@ -37,8 +35,8 @@ import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
 
 import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
@@ -57,9 +55,6 @@ public class DPoPIntrospectionDataProviderTest {
 
     @Mock
     private TokenProvider tokenProvider;
-
-    @Mock
-    private OAuthServerConfiguration mockedOAuthServerConfiguration;
 
     @Mock
     private OAuth2TokenValidationRequestDTO tokenValidationRequestDTO;
@@ -93,19 +88,20 @@ public class DPoPIntrospectionDataProviderTest {
 
         when(tokenBinding.getBindingType()).thenReturn(DPoPConstants.DPOP_TOKEN_TYPE);
         when(tokenBinding.getBindingValue()).thenReturn("jwk-thumbprint");
-        accessTokenDO.setTokenBinding(tokenBinding);
-
         when(accessTokenDO.getTokenBinding()).thenReturn(tokenBinding);
         when(tokenProvider.getVerifiedRefreshToken("accessTokenId")).thenReturn(accessTokenDO);
-        DPoPDataHolder.getInstance().setTokenProvider(tokenProvider);
 
-        this.introspectionResponseDTO.setTokenType(TOKEN_TYPE_NAME);
+        try (MockedStatic<OAuth2Util> oAuth2Util = mockStatic(OAuth2Util.class)) {
+            oAuth2Util.when(OAuth2Util::getTokenProvider).thenReturn(tokenProvider);
 
-        Map<String, Object> result = introspectionDataProvider.getIntrospectionData(
-                tokenValidationRequestDTO, introspectionResponseDTO);
+            this.introspectionResponseDTO.setTokenType(TOKEN_TYPE_NAME);
 
-        Assert.assertEquals(result.get(DPoPConstants.TOKEN_TYPE), DPoPConstants.DPOP_TOKEN_TYPE);
-        Assert.assertNotNull(result.get(DPoPConstants.CNF));
+            Map<String, Object> result = introspectionDataProvider.getIntrospectionData(
+                    tokenValidationRequestDTO, introspectionResponseDTO);
+
+            Assert.assertEquals(result.get(DPoPConstants.TOKEN_TYPE), DPoPConstants.DPOP_TOKEN_TYPE);
+            Assert.assertNotNull(result.get(DPoPConstants.CNF));
+        }
     }
 
     @Test
@@ -117,16 +113,10 @@ public class DPoPIntrospectionDataProviderTest {
 
         when(accessTokenDO.getTokenBinding()).thenReturn(tokenBinding);
 
-        try (MockedStatic<OAuthServerConfiguration> oAuthServerConfiguration = mockStatic(
-                        OAuthServerConfiguration.class);
-                MockedStatic<OAuth2Util> oAuth2Util = mockStatic(OAuth2Util.class)) {
+        try (MockedStatic<OAuth2Util> oAuth2Util = mockStatic(OAuth2Util.class)) {
 
-            mockedOAuthServerConfiguration = mock(OAuthServerConfiguration.class);
-            oAuthServerConfiguration.when(
-                    OAuthServerConfiguration::getInstance).thenReturn(mockedOAuthServerConfiguration);
-            when(mockedOAuthServerConfiguration.getTimeStampSkewInSeconds()).thenReturn(360L);
-
-            oAuth2Util.when(() -> OAuth2Util.findAccessToken(any(), anyBoolean())).thenReturn(accessTokenDO);
+            when(tokenProvider.getVerifiedAccessToken(anyString(), anyBoolean())).thenReturn(accessTokenDO);
+            oAuth2Util.when(OAuth2Util::getTokenProvider).thenReturn(tokenProvider);
 
             this.introspectionResponseDTO.setTokenType("Bearer");
 
