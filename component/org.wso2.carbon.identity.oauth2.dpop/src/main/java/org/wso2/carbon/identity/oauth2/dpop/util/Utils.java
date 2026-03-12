@@ -71,6 +71,31 @@ public class Utils {
     }
 
     /**
+     * Get the resolved application binding type by traversing the application in orgHierarchy.
+     *
+     * @param consumerKey Consumer Key.
+     * @return Resolved application binding type.
+     * @throws IdentityOAuth2Exception Error while getting the Oauth application information.
+     * @throws InvalidOAuthClientException Error while getting the Oauth application information.
+     */
+    public static String getResolvedApplicationBindingType(String consumerKey)
+            throws IdentityOAuth2Exception, InvalidOAuthClientException {
+
+        String accessingOrgId = PrivilegedCarbonContext.getThreadLocalCarbonContext().getAccessingOrganizationId();
+        if (StringUtils.isNotEmpty(accessingOrgId)) {
+            return getResolvedAppBindingTypeFromHierarchy(consumerKey, accessingOrgId);
+        }
+        return OAuth2Util.getAppInformationByClientId(consumerKey).getTokenBindingType();
+    }
+
+    private static String getResolvedAppBindingTypeFromHierarchy(String consumerKey, String organizationId) throws
+            IdentityOAuth2Exception, InvalidOAuthClientException {
+
+        OAuthAppDO oauthAppDO = OAuth2Util.getAppInformationFromOrgHierarchy(consumerKey, organizationId);
+        return oauthAppDO.getTokenBindingType();
+    }
+
+    /**
      * Get Oauth application Access token binding type.
      *
      * @param consumerKey Consumer Key.

@@ -68,8 +68,7 @@ public class OauthDPoPInterceptorHandlerProxy extends AbstractOAuthEventIntercep
             LOG.debug(String.format("DPoP proxy intercepted the token request from the client : %s.", consumerKey));
         }
         try {
-            String tokenBindingType = Utils.getApplicationBindingType(tokenReqDTO.getClientId(),
-                    Utils.getTenantDomain());
+            String tokenBindingType = Utils.getResolvedApplicationBindingType(tokenReqDTO.getClientId());
             if (DPoPConstants.DPOP_TOKEN_TYPE.equals(tokenBindingType)) {
 
                 String dPoPProof = dPoPHeaderValidator.getDPoPHeader(tokReqMsgCtx);
@@ -108,8 +107,7 @@ public class OauthDPoPInterceptorHandlerProxy extends AbstractOAuthEventIntercep
                     consumerKey));
         }
         try {
-            String tokenBindingType = Utils.getApplicationBindingType(tokenReqDTO.getClientId(),
-                    Utils.getTenantDomain());
+            String tokenBindingType = Utils.getResolvedApplicationBindingType(tokenReqDTO.getClientId());
             TokenBinding tokenBinding = tokenBindingTypeManagerDao
                     .getTokenBindingUsingHash(tokenReqDTO.getRefreshToken());
             if (tokenBinding != null) {
