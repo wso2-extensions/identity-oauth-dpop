@@ -35,6 +35,7 @@ import org.wso2.carbon.identity.oauth2.util.TokenMgtUtil;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * This class implements {@link DPoPTokenManagerDAO} interface.
@@ -90,19 +91,22 @@ public class DPoPTokenManagerDAOImpl implements DPoPTokenManagerDAO {
 
         SignedJWT signedJWT = TokenMgtUtil.parseJWT(refreshToken);
         JWTClaimsSet claimsSet = TokenMgtUtil.getTokenJWTClaims(signedJWT);
-        Object bindingTypeObj = claimsSet.getClaim("binding_type");
-        Object bindingRefObj = claimsSet.getClaim("binding_ref");
-        if (bindingTypeObj == null && bindingRefObj == null) {
+        String type = Objects.toString(claimsSet.getClaim("binding_type"), null);
+        String ref  = Objects.toString(claimsSet.getClaim("binding_ref"), null);
+
+        if (type == null && ref == null) {
             return null;
         }
-        if (bindingTypeObj == null || bindingRefObj == null || StringUtils.isBlank(bindingRefObj.toString()) ||
-                !DPoPConstants.DPOP_TOKEN_TYPE.equals(bindingTypeObj.toString())) {
+        if (type != null && !DPoPConstants.DPOP_TOKEN_TYPE.equals(type)) {
+            return null;
+        }
+        if (!DPoPConstants.DPOP_TOKEN_TYPE.equals(type) || StringUtils.isBlank(ref)) {
             throw new IdentityOAuth2Exception("Malformed DPoP token binding claims found in the refresh token.");
         }
 
         TokenBinding tokenBinding = new TokenBinding();
-        tokenBinding.setBindingType(bindingTypeObj.toString());
-        tokenBinding.setBindingReference(bindingRefObj.toString());
+        tokenBinding.setBindingType(type);
+        tokenBinding.setBindingReference(ref);
         tokenBinding.setBindingValue(getDPoPBindingValue(claimsSet));
         return tokenBinding;
     }
