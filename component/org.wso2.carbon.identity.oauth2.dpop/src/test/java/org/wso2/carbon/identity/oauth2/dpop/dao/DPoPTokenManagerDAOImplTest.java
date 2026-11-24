@@ -24,12 +24,14 @@ import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
 import org.wso2.carbon.identity.common.testng.WithCarbonHome;
 import org.wso2.carbon.identity.common.testng.WithH2Database;
 import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
+import org.wso2.carbon.identity.core.util.JdbcUtils;
 import org.wso2.carbon.identity.oauth.config.OAuthServerConfiguration;
 import org.wso2.carbon.identity.oauth.tokenprocessor.HashingPersistenceProcessor;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
@@ -41,9 +43,12 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
  /**
@@ -133,6 +138,37 @@ public class DPoPTokenManagerDAOImplTest {
             doThrow(new DataAccessException("Simulated SQL exception"))
                     .when(jdbcTemplate).executeQuery(Mockito.anyString(), Mockito.any(), Mockito.any());
             dao.getTokenBindingUsingHash(TEST_REFRESH_TOKEN);
+        }
+    }
+
+    @DataProvider
+    public Object[][] databaseTypes() {
+
+        return new Object[][]{
+                {"MSSQL", SQLQueries.RETRIEVE_TOKEN_BINDING_OF_ONE_ACCESS_TOKEN_BY_REFRESH_TOKEN_HASH_MSSQL},
+                {"DB2", SQLQueries.RETRIEVE_TOKEN_BINDING_OF_ONE_ACCESS_TOKEN_BY_REFRESH_TOKEN_HASH_DB2},
+                {"ORACLE", SQLQueries.RETRIEVE_TOKEN_BINDING_OF_ONE_ACCESS_TOKEN_BY_REFRESH_TOKEN_HASH_ORACLE},
+                {"OTHER", SQLQueries.RETRIEVE_TOKEN_BINDING_OF_ONE_ACCESS_TOKEN_BY_REFRESH_TOKEN_HASH}
+        };
+    }
+
+    @Test(dataProvider = "databaseTypes")
+    public void testGetTokenBindingUsingHashUsesTheQueryOfTheDatabase(String databaseType, String expectedQuery)
+            throws Exception {
+
+        enableAccessTokenPersistence();
+        try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class);
+             MockedStatic<JdbcUtils> jdbcUtilsMock = mockStatic(JdbcUtils.class)) {
+
+            jdbcUtilsMock.when(JdbcUtils::isMSSqlDB).thenReturn("MSSQL".equals(databaseType));
+            jdbcUtilsMock.when(JdbcUtils::isDB2DB).thenReturn("DB2".equals(databaseType));
+            jdbcUtilsMock.when(JdbcUtils::isOracleDB).thenReturn("ORACLE".equals(databaseType));
+            JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
+            utilsMock.when(Utils::getNewTemplate).thenReturn(jdbcTemplate);
+
+            new DPoPTokenManagerDAOImpl().getTokenBindingUsingHash(TEST_REFRESH_TOKEN);
+
+            verify(jdbcTemplate).executeQuery(eq(expectedQuery), any(), any());
         }
     }
 
