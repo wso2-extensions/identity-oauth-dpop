@@ -33,6 +33,8 @@ import org.wso2.carbon.identity.oauth2.util.JWTUtils;
 import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
 import org.wso2.carbon.identity.oauth2.util.TokenMgtUtil;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -59,20 +61,13 @@ public class DPoPTokenManagerDAOImpl implements DPoPTokenManagerDAO {
         refreshToken = hashingPersistenceProcessor.getProcessedRefreshToken(refreshToken);
 
         try {
+            if (OAuth2Util.isAccessTokenPersistenceEnabled()) {
+                return getTokenBindingOfAnyAccessToken(jdbcTemplate, refreshToken);
+            }
             String finalRefreshToken = refreshToken;
-            String retrieveTokenBindingQuery = OAuth2Util.isAccessTokenPersistenceEnabled() ?
-                    SQLQueries.RETRIEVE_TOKEN_BINDING_BY_REFRESH_TOKEN_HASH :
-                    SQLQueries.RETRIEVE_TOKEN_BINDING_BY_REFRESH_TOKEN_HASH_NON_PERSISTENT_ACCESS_TOKEN;
             List<TokenBinding> tokenBindingList = jdbcTemplate.executeQuery(
-                    retrieveTokenBindingQuery,
-                    (resultSet, rowNumber) -> {
-                        TokenBinding tokenBinding = new TokenBinding();
-                        tokenBinding.setBindingType(resultSet.getString(1));
-                        tokenBinding.setBindingValue(resultSet.getString(2));
-                        tokenBinding.setBindingReference(resultSet.getString(3));
-
-                        return tokenBinding;
-                    },
+                    SQLQueries.RETRIEVE_TOKEN_BINDING_BY_REFRESH_TOKEN_HASH_NON_PERSISTENT_ACCESS_TOKEN,
+                    DPoPTokenManagerDAOImpl::mapTokenBinding,
                     preparedStatement -> {
                         int parameterIndex = 0;
                         preparedStatement.setString(++parameterIndex, finalRefreshToken);
@@ -85,6 +80,45 @@ public class DPoPTokenManagerDAOImpl implements DPoPTokenManagerDAO {
                     refreshToken);
             throw new IdentityOAuth2Exception(error, e);
         }
+    }
+
+    /**
+     * All access tokens of a refresh token carry the binding of the refresh token, so read the binding of one of
+     * them. The access token lookup is limited to one row, so its cost does not grow with the number of access
+     * tokens issued for the refresh token.
+     */
+    private TokenBinding getTokenBindingOfAnyAccessToken(JdbcTemplate jdbcTemplate, String refreshTokenHash)
+            throws DataAccessException {
+
+        List<String> tokenIds = jdbcTemplate.executeQuery(
+                SQLQueries.RETRIEVE_ACCESS_TOKEN_ID_BY_REFRESH_TOKEN_HASH,
+                (resultSet, rowNumber) -> resultSet.getString(1),
+                preparedStatement -> {
+                    preparedStatement.setMaxRows(1);
+                    preparedStatement.setString(1, refreshTokenHash);
+                });
+        if (tokenIds.isEmpty()) {
+            return null;
+        }
+
+        List<TokenBinding> tokenBindingList = jdbcTemplate.executeQuery(
+                SQLQueries.RETRIEVE_TOKEN_BINDING_BY_TOKEN_ID,
+                DPoPTokenManagerDAOImpl::mapTokenBinding,
+                preparedStatement -> {
+                    int parameterIndex = 0;
+                    preparedStatement.setString(++parameterIndex, tokenIds.get(0));
+                    preparedStatement.setString(++parameterIndex, DPoPConstants.DPOP_TOKEN_TYPE);
+                });
+        return tokenBindingList.isEmpty() ? null : tokenBindingList.get(0);
+    }
+
+    private static TokenBinding mapTokenBinding(ResultSet resultSet, int rowNumber) throws SQLException {
+
+        TokenBinding tokenBinding = new TokenBinding();
+        tokenBinding.setBindingType(resultSet.getString(1));
+        tokenBinding.setBindingValue(resultSet.getString(2));
+        tokenBinding.setBindingReference(resultSet.getString(3));
+        return tokenBinding;
     }
 
     private TokenBinding getTokenBindingFromRefreshTokenJWT(String refreshToken) throws IdentityOAuth2Exception {

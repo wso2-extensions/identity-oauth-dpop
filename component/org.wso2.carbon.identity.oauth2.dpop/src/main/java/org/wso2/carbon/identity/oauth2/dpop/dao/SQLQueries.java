@@ -23,17 +23,29 @@ package org.wso2.carbon.identity.oauth2.dpop.dao;
  */
 public class SQLQueries {
 
+    /**
+     * @deprecated Joins every access token row of the refresh token. Use
+     * {@link #RETRIEVE_ACCESS_TOKEN_ID_BY_REFRESH_TOKEN_HASH} and {@link #RETRIEVE_TOKEN_BINDING_BY_TOKEN_ID}.
+     */
+    @Deprecated
+    public static final String RETRIEVE_TOKEN_BINDING_BY_REFRESH_TOKEN_HASH =
+            "SELECT BINDING.TOKEN_BINDING_TYPE,BINDING.TOKEN_BINDING_VALUE,BINDING.TOKEN_BINDING_REF " +
+                    "FROM IDN_OAUTH2_ACCESS_TOKEN TOKEN LEFT JOIN IDN_OAUTH2_TOKEN_BINDING BINDING ON " +
+                    "TOKEN.TOKEN_ID=BINDING.TOKEN_ID WHERE TOKEN.REFRESH_TOKEN_HASH = ? " +
+                    "AND BINDING.TOKEN_BINDING_TYPE = ?";
+
     /*
      * Every access token row that shares a refresh token hash belongs to the same refresh token, and a refresh copies
      * the binding of the previous row to the new one. So the binding of any one row is the binding of the refresh
-     * token. Look up a single row instead of joining all of them: when the refresh token is not renewed, each refresh
-     * adds a row with the same hash, and joining all of them makes every refresh slower than the last.
+     * token. Read one row (the caller limits the result to one row) instead of joining all of them: when the refresh
+     * token is not renewed, each refresh adds a row with the same hash.
      */
-    public static final String RETRIEVE_TOKEN_BINDING_BY_REFRESH_TOKEN_HASH =
-            "SELECT BINDING.TOKEN_BINDING_TYPE,BINDING.TOKEN_BINDING_VALUE,BINDING.TOKEN_BINDING_REF " +
-                    "FROM IDN_OAUTH2_TOKEN_BINDING BINDING WHERE BINDING.TOKEN_ID = " +
-                    "(SELECT MIN(TOKEN_ID) FROM IDN_OAUTH2_ACCESS_TOKEN WHERE REFRESH_TOKEN_HASH = ?) " +
-                    "AND BINDING.TOKEN_BINDING_TYPE = ?";
+    public static final String RETRIEVE_ACCESS_TOKEN_ID_BY_REFRESH_TOKEN_HASH =
+            "SELECT TOKEN_ID FROM IDN_OAUTH2_ACCESS_TOKEN WHERE REFRESH_TOKEN_HASH = ?";
+
+    public static final String RETRIEVE_TOKEN_BINDING_BY_TOKEN_ID =
+            "SELECT TOKEN_BINDING_TYPE,TOKEN_BINDING_VALUE,TOKEN_BINDING_REF FROM IDN_OAUTH2_TOKEN_BINDING " +
+                    "WHERE TOKEN_ID = ? AND TOKEN_BINDING_TYPE = ?";
 
     public static final String RETRIEVE_TOKEN_BINDING_BY_REFRESH_TOKEN_HASH_NON_PERSISTENT_ACCESS_TOKEN =
             "SELECT BINDING.TOKEN_BINDING_TYPE,BINDING.TOKEN_BINDING_VALUE,BINDING.TOKEN_BINDING_REF " +
