@@ -108,18 +108,16 @@ public class OauthDPoPInterceptorHandlerProxy extends AbstractOAuthEventIntercep
         }
         try {
             String tokenBindingType = Utils.getResolvedApplicationBindingType(tokenReqDTO.getClientId());
+            if (!DPoPConstants.DPOP_TOKEN_TYPE.equals(tokenBindingType)) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(String.format("DPoP based token binding is not enabled for the application Id : %s. " +
+                            "Skipping DPoP validation of the token renewal request.", consumerKey));
+                }
+                return;
+            }
             TokenBinding tokenBinding = tokenBindingTypeManagerDao
                     .getTokenBindingUsingHash(tokenReqDTO.getRefreshToken());
             if (tokenBinding != null) {
-                if (!DPoPConstants.DPOP_TOKEN_TYPE.equals(tokenBindingType)) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug(String.format("DPoP based token binding is not enabled  for the " +
-                                "application Id : %s.", consumerKey));
-                    }
-                    throw new IdentityOAuth2ClientException(DPoPConstants.INVALID_CLIENT,
-                            DPoPConstants.INVALID_CLIENT_ERROR);
-                }
-
                 String dPoPProof = dPoPHeaderValidator.getDPoPHeader(tokReqMsgCtx);
                 if (StringUtils.isBlank(dPoPProof)) {
                     if (LOG.isDebugEnabled()) {
