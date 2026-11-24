@@ -43,8 +43,6 @@ import java.util.Objects;
  */
 public class DPoPTokenManagerDAOImpl implements DPoPTokenManagerDAO {
 
-    private volatile String tokenBindingOfOneAccessTokenQuery;
-
     @Override
     public TokenBinding getTokenBindingUsingHash(String refreshToken)
             throws IdentityOAuth2Exception {
@@ -90,29 +88,18 @@ public class DPoPTokenManagerDAOImpl implements DPoPTokenManagerDAO {
         }
     }
 
-    /**
-     * Returns the query that reads the binding of one access token of a refresh token, in the row limiting syntax of
-     * the identity database. The database does not change at runtime, so the query is resolved once.
-     */
     private String getTokenBindingOfOneAccessTokenQuery() throws DataAccessException {
 
-        if (tokenBindingOfOneAccessTokenQuery == null) {
-            if (JdbcUtils.isMSSqlDB()) {
-                tokenBindingOfOneAccessTokenQuery =
-                        SQLQueries.RETRIEVE_TOKEN_BINDING_OF_ONE_ACCESS_TOKEN_BY_REFRESH_TOKEN_HASH_MSSQL;
-            } else if (JdbcUtils.isDB2DB()) {
-                tokenBindingOfOneAccessTokenQuery =
-                        SQLQueries.RETRIEVE_TOKEN_BINDING_OF_ONE_ACCESS_TOKEN_BY_REFRESH_TOKEN_HASH_DB2;
-            } else if (JdbcUtils.isOracleDB()) {
-                tokenBindingOfOneAccessTokenQuery =
-                        SQLQueries.RETRIEVE_TOKEN_BINDING_OF_ONE_ACCESS_TOKEN_BY_REFRESH_TOKEN_HASH_ORACLE;
-            } else {
-                // MySQL, MariaDB, PostgreSQL and H2.
-                tokenBindingOfOneAccessTokenQuery =
-                        SQLQueries.RETRIEVE_TOKEN_BINDING_OF_ONE_ACCESS_TOKEN_BY_REFRESH_TOKEN_HASH;
-            }
+        if (JdbcUtils.isMSSqlDB()) {
+            return SQLQueries.RETRIEVE_TOKEN_BINDING_OF_ONE_ACCESS_TOKEN_BY_REFRESH_TOKEN_HASH_MSSQL;
         }
-        return tokenBindingOfOneAccessTokenQuery;
+        if (JdbcUtils.isDB2DB()) {
+            return SQLQueries.RETRIEVE_TOKEN_BINDING_OF_ONE_ACCESS_TOKEN_BY_REFRESH_TOKEN_HASH_DB2;
+        }
+        if (JdbcUtils.isOracleDB()) {
+            return SQLQueries.RETRIEVE_TOKEN_BINDING_OF_ONE_ACCESS_TOKEN_BY_REFRESH_TOKEN_HASH_ORACLE;
+        }
+        return SQLQueries.RETRIEVE_TOKEN_BINDING_OF_ONE_ACCESS_TOKEN_BY_REFRESH_TOKEN_HASH;
     }
 
     private TokenBinding getTokenBindingFromRefreshTokenJWT(String refreshToken) throws IdentityOAuth2Exception {

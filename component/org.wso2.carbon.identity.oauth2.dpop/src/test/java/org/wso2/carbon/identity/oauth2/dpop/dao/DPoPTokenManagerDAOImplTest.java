@@ -175,8 +175,6 @@ public class DPoPTokenManagerDAOImplTest {
     @Test
     public void testGetTokenBindingUsingHashForRefreshTokenWithManyAccessTokens() throws Exception {
 
-        // When the refresh token is not renewed, every refresh adds an access token row with the same refresh token
-        // hash and copies the binding forward.
         String refreshToken = "renewal-off-dpop-refresh-token";
         insertRefreshTokenLineage(refreshToken, "dpop-lineage-", 3, BINDING_TYPE);
         enableAccessTokenPersistence();
