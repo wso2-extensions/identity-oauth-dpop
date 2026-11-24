@@ -43,6 +43,8 @@ import java.util.Objects;
  */
 public class DPoPTokenManagerDAOImpl implements DPoPTokenManagerDAO {
 
+    private String tokenBindingOfOneAccessTokenQuery;
+
     @Override
     public TokenBinding getTokenBindingUsingHash(String refreshToken)
             throws IdentityOAuth2Exception {
@@ -89,6 +91,14 @@ public class DPoPTokenManagerDAOImpl implements DPoPTokenManagerDAO {
     }
 
     private String getTokenBindingOfOneAccessTokenQuery() throws DataAccessException {
+
+        if (tokenBindingOfOneAccessTokenQuery == null) {
+            tokenBindingOfOneAccessTokenQuery = resolveTokenBindingOfOneAccessTokenQuery();
+        }
+        return tokenBindingOfOneAccessTokenQuery;
+    }
+
+    private String resolveTokenBindingOfOneAccessTokenQuery() throws DataAccessException {
 
         if (JdbcUtils.isMSSqlDB()) {
             return SQLQueries.RETRIEVE_TOKEN_BINDING_OF_ONE_ACCESS_TOKEN_BY_REFRESH_TOKEN_HASH_MSSQL;
