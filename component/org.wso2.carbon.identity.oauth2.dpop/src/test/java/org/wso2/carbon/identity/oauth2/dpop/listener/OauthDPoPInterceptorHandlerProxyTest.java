@@ -24,6 +24,9 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.common.testng.WithCarbonHome;
+import org.wso2.carbon.identity.oauth2.dpop.constant.DPoPConstants;
+import org.wso2.carbon.identity.oauth2.dpop.dao.DPoPTokenManagerDAO;
+import org.wso2.carbon.identity.oauth2.dpop.internal.DPoPDataHolder;
 import org.wso2.carbon.identity.oauth2.dpop.util.Utils;
 import org.wso2.carbon.identity.oauth2.dpop.validators.DPoPHeaderValidator;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenReqDTO;
@@ -32,9 +35,13 @@ import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
 
 import javax.servlet.http.HttpServletRequestWrapper;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.wso2.carbon.identity.oauth2.dpop.util.DPoPTestConstants.DUMMY_APP_RESIDENT_TENANT_DOMAIN;
 import static org.wso2.carbon.identity.oauth2.dpop.util.DPoPTestConstants.DUMMY_HTTP_METHOD;
@@ -44,6 +51,8 @@ import static org.wso2.carbon.identity.oauth2.dpop.util.DPoPTestConstants.DUMMY_
 
 @WithCarbonHome
 public class OauthDPoPInterceptorHandlerProxyTest {
+
+    private static final String DUMMY_REFRESH_TOKEN = "dummyRefreshToken";
 
     private DPoPHeaderValidator dPoPHeaderValidator;
 
@@ -84,6 +93,45 @@ public class OauthDPoPInterceptorHandlerProxyTest {
                 new OauthDPoPInterceptorHandlerProxy(dPoPHeaderValidator);
 
         oauthDPoPInterceptorHandlerProxy.onPreTokenIssue(oAuth2AccessTokenReqDTO, tokReqMsgCtx, null);
+    }
+
+    @Test
+    public void testOnPreTokenRenewalSkipsBindingLookupForNonDPoPApplication() throws Exception {
+
+        utilsMockedStatic.when(() -> Utils.getResolvedApplicationBindingType(any())).thenReturn("sso-session");
+        DPoPTokenManagerDAO tokenManagerDAO = mock(DPoPTokenManagerDAO.class);
+        OauthDPoPInterceptorHandlerProxy oauthDPoPInterceptorHandlerProxy = createProxyWithDao(tokenManagerDAO);
+        oAuth2AccessTokenReqDTO.setRefreshToken(DUMMY_REFRESH_TOKEN);
+
+        oauthDPoPInterceptorHandlerProxy.onPreTokenRenewal(oAuth2AccessTokenReqDTO, tokReqMsgCtx, null);
+
+        verify(tokenManagerDAO, never()).getTokenBindingUsingHash(anyString());
+    }
+
+    @Test
+    public void testOnPreTokenRenewalForDPoPApplicationWithUnboundRefreshToken() throws Exception {
+
+        utilsMockedStatic.when(() -> Utils.getResolvedApplicationBindingType(any()))
+                .thenReturn(DPoPConstants.DPOP_TOKEN_TYPE);
+        DPoPTokenManagerDAO tokenManagerDAO = mock(DPoPTokenManagerDAO.class);
+        OauthDPoPInterceptorHandlerProxy oauthDPoPInterceptorHandlerProxy = createProxyWithDao(tokenManagerDAO);
+        oAuth2AccessTokenReqDTO.setRefreshToken(DUMMY_REFRESH_TOKEN);
+
+        oauthDPoPInterceptorHandlerProxy.onPreTokenRenewal(oAuth2AccessTokenReqDTO, tokReqMsgCtx, null);
+
+        verify(tokenManagerDAO, times(1)).getTokenBindingUsingHash(DUMMY_REFRESH_TOKEN);
+    }
+
+    private OauthDPoPInterceptorHandlerProxy createProxyWithDao(DPoPTokenManagerDAO tokenManagerDAO) {
+
+        DPoPDataHolder dataHolder = DPoPDataHolder.getInstance();
+        DPoPTokenManagerDAO previousDAO = dataHolder.getTokenBindingTypeManagerDao();
+        dataHolder.setTokenBindingTypeManagerDao(tokenManagerDAO);
+        try {
+            return new OauthDPoPInterceptorHandlerProxy(dPoPHeaderValidator);
+        } finally {
+            dataHolder.setTokenBindingTypeManagerDao(previousDAO);
+        }
     }
 
     private OAuthTokenReqMessageContext createTokenReqMessageContext() {
