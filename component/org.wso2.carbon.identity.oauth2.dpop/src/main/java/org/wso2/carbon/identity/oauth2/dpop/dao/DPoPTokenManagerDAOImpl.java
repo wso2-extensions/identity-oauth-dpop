@@ -23,6 +23,7 @@ import com.nimbusds.jwt.SignedJWT;
 import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
+import org.wso2.carbon.identity.core.util.JdbcUtils;
 import org.wso2.carbon.identity.oauth.tokenprocessor.HashingPersistenceProcessor;
 import org.wso2.carbon.identity.oauth.tokenprocessor.TokenPersistenceProcessor;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
@@ -41,6 +42,8 @@ import java.util.Objects;
  * This class implements {@link DPoPTokenManagerDAO} interface.
  */
 public class DPoPTokenManagerDAOImpl implements DPoPTokenManagerDAO {
+
+    private String tokenBindingOfOneAccessTokenQuery;
 
     @Override
     public TokenBinding getTokenBindingUsingHash(String refreshToken)
@@ -61,7 +64,7 @@ public class DPoPTokenManagerDAOImpl implements DPoPTokenManagerDAO {
         try {
             String finalRefreshToken = refreshToken;
             String retrieveTokenBindingQuery = OAuth2Util.isAccessTokenPersistenceEnabled() ?
-                    SQLQueries.RETRIEVE_TOKEN_BINDING_BY_REFRESH_TOKEN_HASH :
+                    getTokenBindingOfOneAccessTokenQuery() :
                     SQLQueries.RETRIEVE_TOKEN_BINDING_BY_REFRESH_TOKEN_HASH_NON_PERSISTENT_ACCESS_TOKEN;
             List<TokenBinding> tokenBindingList = jdbcTemplate.executeQuery(
                     retrieveTokenBindingQuery,
@@ -85,6 +88,28 @@ public class DPoPTokenManagerDAOImpl implements DPoPTokenManagerDAO {
                     refreshToken);
             throw new IdentityOAuth2Exception(error, e);
         }
+    }
+
+    private String getTokenBindingOfOneAccessTokenQuery() throws DataAccessException {
+
+        if (tokenBindingOfOneAccessTokenQuery == null) {
+            tokenBindingOfOneAccessTokenQuery = resolveTokenBindingOfOneAccessTokenQuery();
+        }
+        return tokenBindingOfOneAccessTokenQuery;
+    }
+
+    private String resolveTokenBindingOfOneAccessTokenQuery() throws DataAccessException {
+
+        if (JdbcUtils.isMSSqlDB()) {
+            return SQLQueries.RETRIEVE_TOKEN_BINDING_OF_ONE_ACCESS_TOKEN_BY_REFRESH_TOKEN_HASH_MSSQL;
+        }
+        if (JdbcUtils.isDB2DB()) {
+            return SQLQueries.RETRIEVE_TOKEN_BINDING_OF_ONE_ACCESS_TOKEN_BY_REFRESH_TOKEN_HASH_DB2;
+        }
+        if (JdbcUtils.isOracleDB()) {
+            return SQLQueries.RETRIEVE_TOKEN_BINDING_OF_ONE_ACCESS_TOKEN_BY_REFRESH_TOKEN_HASH_ORACLE;
+        }
+        return SQLQueries.RETRIEVE_TOKEN_BINDING_OF_ONE_ACCESS_TOKEN_BY_REFRESH_TOKEN_HASH;
     }
 
     private TokenBinding getTokenBindingFromRefreshTokenJWT(String refreshToken) throws IdentityOAuth2Exception {
